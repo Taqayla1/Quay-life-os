@@ -455,7 +455,10 @@ tr:last-child td{border-bottom:none;}
 
     <div class="sidebar-foot">
       <div class="avatar-mini" id="avatarMini">Q</div>
-      <div id="sidebarFootText">Quay — Plantation, FL</div>
+      <div>
+        <div id="sidebarFootText">Quay — Plantation, FL</div>
+        <div id="globalSyncIndicator" style="font-size:10px;color:var(--ink-soft);margin-top:2px;"></div>
+      </div>
     </div>
   </div>
 
@@ -4347,8 +4350,15 @@ function firestoreDocRef(uid, db){
   return db.collection('users').doc(uid).collection('dashboard').doc('state');
 }
 
+function setSyncIndicator(text, isError){
+  const el = document.getElementById('globalSyncIndicator');
+  if(!el) return;
+  el.textContent = text;
+  el.style.color = isError ? 'var(--rose)' : 'var(--ink-soft)';
+}
 async function loadStateFromFirestore(uid, db){
   try{
+    setSyncIndicator('Loading…', false);
     const snap = await firestoreDocRef(uid, db).get();
     if(snap.exists){
       const saved = snap.data();
@@ -4360,17 +4370,22 @@ async function loadStateFromFirestore(uid, db){
       // First time this account has signed in — save the current starter data as their baseline.
       await saveStateToFirestore(uid, db);
     }
+    setSyncIndicator('Synced', false);
   } catch(err){
     console.error('Failed to load from Firestore:', err);
+    setSyncIndicator('Load failed: ' + err.message, true);
   }
 }
 
 async function saveStateToFirestore(uid, db){
   try{
+    setSyncIndicator('Saving…', false);
     await firestoreDocRef(uid, db).set({ data: JSON.stringify(state), updatedAt: new Date().toISOString() });
     lastSavedSnapshot = JSON.stringify(state);
+    setSyncIndicator('Synced', false);
   } catch(err){
     console.error('Failed to save to Firestore:', err);
+    setSyncIndicator('Save failed: ' + err.message, true);
   }
 }
 
