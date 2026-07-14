@@ -625,16 +625,16 @@ const state = {
   ],
 
   courses: [
-    {id:'c1', name:'PSY-3400: Cognitive Psychology', progress:64, credits:5},
-    {id:'c2', name:'PSY-3200: Developmental Psychology', progress:78, credits:5},
-    {id:'c3', name:'PSY-2100: Research Methods', progress:100, credits:5},
+    {id:'c1', name:'PSY-3400: Cognitive Psychology', credits:5},
+    {id:'c2', name:'PSY-3200: Developmental Psychology', credits:5},
+    {id:'c3', name:'PSY-2100: Research Methods', credits:5},
   ],
   assignments: [
-    {id:'a1', name:'Discussion Post — Memory Models', course:'PSY-3400', due:daysFromNow(0), status:'In Progress', est:'1.5h', notes:'Cite Baddeley & Hitch', readings:['Baddeley & Hitch — working memory model']},
-    {id:'a2', name:'Unit 6 Quiz', course:'PSY-3200', due:daysFromNow(-2), status:'Overdue', est:'40m', notes:'', readings:[]},
-    {id:'a3', name:'Case Study Analysis Draft', course:'PSY-3400', due:daysFromNow(6), status:'Not Started', est:'3h', notes:'Pick client from Ch.9 vignettes', readings:['Ch. 9 — Cognitive Development (case vignettes)']},
-    {id:'a4', name:'Final Research Proposal', course:'PSY-2100', due:daysFromNow(-10), status:'Submitted', est:'—', notes:'Grade: A-', readings:[]},
-    {id:'a5', name:'Reflection Journal #4', course:'PSY-3200', due:daysFromNow(3), status:'Not Started', est:'45m', notes:'', readings:[]},
+    {id:'a1', name:'Discussion Post — Memory Models', courseId:'c1', due:daysFromNow(0), status:'In Progress', est:'1.5h', notes:'Cite Baddeley & Hitch', readings:['Baddeley & Hitch — working memory model']},
+    {id:'a2', name:'Unit 6 Quiz', courseId:'c2', due:daysFromNow(-2), status:'Overdue', est:'40m', notes:'', readings:[]},
+    {id:'a3', name:'Case Study Analysis Draft', courseId:'c1', due:daysFromNow(6), status:'Not Started', est:'3h', notes:'Pick client from Ch.9 vignettes', readings:['Ch. 9 — Cognitive Development (case vignettes)']},
+    {id:'a4', name:'Final Research Proposal', courseId:'c3', due:daysFromNow(-10), status:'Submitted', est:'—', notes:'Grade: A-', readings:[]},
+    {id:'a5', name:'Reflection Journal #4', courseId:'c2', due:daysFromNow(3), status:'Not Started', est:'45m', notes:'', readings:[]},
   ],
   studyPlanner: [
     {id:'sp1', text:'Mon / Wed — PSY-3400 reading + notes'},
@@ -1021,7 +1021,7 @@ function openEditModal(title, fields, onSave){
   const box = document.getElementById('modalBox');
   box.innerHTML = `<h3>${esc(title)}</h3>` + fields.map(f=>{
     if(f.type==='select'){
-      return `<div class="field"><label>${esc(f.label)}</label><select id="mf_${f.key}">${f.options.map(o=>`<option ${o===f.value?'selected':''}>${esc(o)}</option>`).join('')}</select></div>`;
+      return `<div class="field"><label>${esc(f.label)}</label><select id="mf_${f.key}">${f.options.map((o,i)=>`<option value="${esc(o)}" ${o===f.value?'selected':''}>${esc(f.optionLabels?f.optionLabels[i]:o)}</option>`).join('')}</select></div>`;
     }
     if(f.type==='textarea'){
       return `<div class="field"><label>${esc(f.label)}</label><textarea id="mf_${f.key}">${esc(f.value)}</textarea></div>`;
@@ -1082,7 +1082,7 @@ document.getElementById('globalSearch').addEventListener('input', (e)=>{
   state.tasks.forEach(t=>{ if(t.title.toLowerCase().includes(q)) hits.push({label:t.title, type:'Task', sub:t.business, hub:'tasks'}); });
   state.clientsTravel.forEach(c=>{ if(c.name.toLowerCase().includes(q)) hits.push({label:c.name, type:'Travel Client', sub:c.stage, hub:'travel'}); });
   state.clientsBrand.forEach(c=>{ if(c.name.toLowerCase().includes(q)) hits.push({label:c.name, type:'Brand Client', sub:c.stage, hub:'brand'}); });
-  state.courses.forEach(c=>{ if(c.name.toLowerCase().includes(q)) hits.push({label:c.name, type:'Course', sub:c.progress+'% complete', hub:'school'}); });
+  state.courses.forEach(c=>{ if(c.name.toLowerCase().includes(q)) hits.push({label:c.name, type:'Course', sub:courseProgress(c.id)+'% complete', hub:'school'}); });
   state.assignments.forEach(a=>{ if(a.name.toLowerCase().includes(q)) hits.push({label:a.name, type:'Assignment', sub:a.status, hub:'school'}); });
   state.exams.forEach(ex=>{ if(ex.name.toLowerCase().includes(q)) hits.push({label:ex.name, type:'Exam', sub:fmtDate(ex.date), hub:'school'}); });
   Object.keys(state.goals).forEach(tab=>{
@@ -1114,8 +1114,17 @@ function renderHome(){
   const todayTasks = state.tasks.filter(t=>t.status==='today' && t.status!=='completed');
   const overdue = state.tasks.filter(t=>t.status==='overdue');
   const upcomingDeadlines = state.tasks.filter(t=>{
-    const d = daysUntil(t.due); return d!==null && d>0 && d<=7 && t.status!=='completed';
-  }).sort((a,b)=>daysUntil(a.due)-daysUntil(b.due)).slice(0,5);
+    if(t.status==='completed') return false;
+    const d = daysUntil(t.due);
+    const isToday = t.status==='today' || d===0;
+    return isToday || (d!==null && d>0 && d<=7);
+  }).sort((a,b)=>{
+    const da = daysUntil(a.due), db = daysUntil(b.due);
+    const aToday = a.status==='today' || da===0, bToday = b.status==='today' || db===0;
+    if(aToday && !bToday) return -1;
+    if(bToday && !aToday) return 1;
+    return (da??999) - (db??999);
+  }).slice(0,5);
   const completedCount = state.tasks.filter(t=>t.status==='completed').length;
   const weeklyPct = Math.round((completedCount/(state.tasks.length||1))*100);
   const habitPct = Math.round(state.habits.reduce((s,h)=>s+h.days.filter(Boolean).length,0) / (state.habits.length*7) * 100);
@@ -1513,7 +1522,7 @@ function renderTaskSections(){
     {key:'overdue', label:'Overdue', match:t=>t.status==='overdue' || (daysUntil(t.due)!==null && daysUntil(t.due)<0 && t.status!=='completed')},
     {key:'week', label:'This Week', match:t=>{const d=daysUntil(t.due); return d!==null && d>0 && d<=7;}},
     {key:'upcoming', label:'Upcoming', match:t=>{const d=daysUntil(t.due); return d!==null && d>7;}},
-    {key:'low', label:'Low Priority', match:t=>t.priority==='Low' && t.status!=='completed'},
+    {key:'low', label:'Low Priority', match:t=>t.priority==='Low' && t.status!=='completed' && t.status!=='inbox'},
   ];
   const html = sections.map(s=>{
     const items = applyTaskFilter(state.tasks.filter(s.match));
@@ -1640,6 +1649,16 @@ function openAddChoreModal(frequency){
 /* =========================================================
    SCHOOL HUB
    ========================================================= */
+function courseProgress(courseId){
+  const linked = state.assignments.filter(a=>a.courseId===courseId);
+  if(!linked.length) return 0;
+  const done = linked.filter(a=>a.status==='Submitted').length;
+  return Math.round(done/linked.length*100);
+}
+function courseName(courseId){
+  const c = state.courses.find(x=>x.id===courseId);
+  return c ? c.name : 'Unassigned';
+}
 function renderSchool(){
   const degreePct = Math.round(state.degree.completedCredits/state.degree.totalCredits*100);
   const dueThisWeek = state.assignments.filter(a=>{const d=daysUntil(a.due); return d!==null && d>=0 && d<=7;});
@@ -1662,17 +1681,22 @@ function renderSchool(){
 
     <div class="card" style="margin-bottom:18px;">
       <div class="card-head"><h3>Course Dashboard</h3><span class="eyebrow">This Term</span></div>
+      <p class="card-sub" style="margin-top:-6px;">Progress is calculated automatically from linked assignments marked Submitted.</p>
       <div class="grid grid-3">
-        ${state.courses.map(c=>`
+        ${state.courses.map(c=>{
+          const pct = courseProgress(c.id);
+          const linkedCount = state.assignments.filter(a=>a.courseId===c.id).length;
+          return `
           <div class="stat">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
               <div style="font-weight:500;font-size:13.5px;">${esc(c.name)}</div>
               <div style="display:flex;gap:4px;">${miniIcon(iconPencil(), `editCourse('${c.id}')`, 'Edit')}${miniIcon(iconX(), `removeCourse('${c.id}')`, 'Remove')}</div>
             </div>
-            <div class="pbar-row"><span>Progress</span><b>${c.progress}%</b></div>
-            <div class="pbar-track"><div class="pbar-fill" style="width:${c.progress}%"></div></div>
-            <div class="delta" style="margin-top:8px;">${c.credits} credits</div>
-          </div>`).join('')}
+            <div class="pbar-row"><span>Progress</span><b>${pct}%</b></div>
+            <div class="pbar-track"><div class="pbar-fill" style="width:${pct}%"></div></div>
+            <div class="delta" style="margin-top:8px;">${c.credits} credits · ${linkedCount} assignment${linkedCount===1?'':'s'} linked</div>
+          </div>`;
+        }).join('')}
       </div>
       <button class="btn btn-outline btn-sm" style="margin-top:14px;" onclick="openAddCourseModal()">+ Add Course</button>
     </div>
@@ -1687,7 +1711,7 @@ function renderSchool(){
               <td>${esc(a.name)}${a.notes?`<div class="empty-note" style="padding:2px 0 0;">${esc(a.notes)}</div>`:''}
                 ${a.readings.length ? `<div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">${a.readings.map((r,i)=>`<div style="font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:5px;">📖 ${esc(r)}${miniIcon(iconX(), `removeAssignmentReading('${a.id}',${i})`, 'Remove')}</div>`).join('')}</div>` : ''}
               </td>
-              <td>${esc(a.course)}</td>
+              <td>${esc(courseName(a.courseId))}</td>
               <td>${fmtDate(a.due)}</td>
               <td><span class="chip ${a.status==='Overdue'?'high':a.status==='Submitted'?'low':'medium'}">${esc(a.status)}</span></td>
               <td><div style="display:flex;gap:4px;">${miniIcon(iconPencil(), `editAssignment('${a.id}')`, 'Edit')}${miniIcon(iconX(), `removeAssignment('${a.id}')`, 'Remove')}</div></td>
@@ -1766,9 +1790,9 @@ function editCourse(id){
   const c = state.courses.find(x=>x.id===id); if(!c) return;
   openEditModal('Edit Course', [
     {key:'name', label:'Course Name', value:c.name},
-    {key:'progress', label:'Progress %', type:'number', value:c.progress},
+    {key:'credits', label:'Credits', type:'number', value:c.credits},
   ], v=>{
-    c.name = v.name.trim()||c.name; c.progress = Math.max(0,Math.min(100,intOr(v.progress, c.progress)));
+    c.name = v.name.trim()||c.name; c.credits = intOr(v.credits, c.credits);
     renderSchool();
   });
 }
@@ -1777,10 +1801,11 @@ function editAssignment(id){
   const a = state.assignments.find(x=>x.id===id); if(!a) return;
   openEditModal('Edit Assignment', [
     {key:'name', label:'Assignment Name', value:a.name},
+    {key:'courseId', label:'Course', type:'select', value:a.courseId||'', options:['', ...state.courses.map(c=>c.id)], optionLabels:['— Unassigned —', ...state.courses.map(c=>c.name)]},
     {key:'due', label:'Due Date', type:'date', value:a.due||''},
     {key:'status', label:'Status', type:'select', value:a.status, options:['Not Started','In Progress','Submitted','Overdue']},
   ], v=>{
-    a.name = v.name.trim()||a.name; a.due = v.due||a.due; a.status = v.status;
+    a.name = v.name.trim()||a.name; a.due = v.due||a.due; a.status = v.status; a.courseId = v.courseId||null;
     renderSchool();
   });
 }
@@ -1839,25 +1864,24 @@ function removeExtraReading(idx){
 function openAddCourseModal(){
   openEditModal('Add Course', [
     {key:'name', label:'Course Name', value:''},
-    {key:'progress', label:'Progress %', type:'number', value:'0'},
     {key:'credits', label:'Credits', type:'number', value:'5'},
   ], v=>{
     if(!v.name.trim()) return;
-    state.courses.push({id:uid('c'), name:v.name.trim(), progress:Math.max(0,Math.min(100,intOr(v.progress, 0))), credits:intOr(v.credits, 0)});
+    state.courses.push({id:uid('c'), name:v.name.trim(), credits:intOr(v.credits, 0)});
     renderSchool();
   });
 }
 function openAddAssignmentModal(){
   openEditModal('Add Assignment', [
     {key:'name', label:'Assignment Name', value:''},
-    {key:'course', label:'Course', value:''},
+    {key:'courseId', label:'Course', type:'select', value:state.courses[0]?state.courses[0].id:'', options:['', ...state.courses.map(c=>c.id)], optionLabels:['— Unassigned —', ...state.courses.map(c=>c.name)]},
     {key:'due', label:'Due Date', type:'date', value:''},
     {key:'status', label:'Status', type:'select', value:'Not Started', options:['Not Started','In Progress','Submitted','Overdue']},
     {key:'est', label:'Estimated Time', value:''},
     {key:'notes', label:'Notes', value:''},
   ], v=>{
     if(!v.name.trim()) return;
-    state.assignments.push({id:uid('a'), name:v.name.trim(), course:v.course.trim(), due:v.due||null, status:v.status, est:v.est.trim()||'—', notes:v.notes.trim(), readings:[]});
+    state.assignments.push({id:uid('a'), name:v.name.trim(), courseId:v.courseId||null, due:v.due||null, status:v.status, est:v.est.trim()||'—', notes:v.notes.trim(), readings:[]});
     renderSchool();
   });
 }
@@ -3527,7 +3551,7 @@ let plannerView = 'weekly';
 function itemsForDate(iso){
   const out = [];
   state.tasks.forEach(t=>{ if(t.due===iso && t.status!=='completed') out.push({label:t.title, title:t.title, type:'Task', color:'var(--gold)', date:iso, time:null, location:''}); });
-  state.assignments.forEach(a=>{ if(a.due===iso) out.push({label:a.name+' ('+a.course+')', title:a.name, type:'School', color:'var(--sky)', date:iso, time:null, location:''}); });
+  state.assignments.forEach(a=>{ if(a.due===iso) out.push({label:a.name+' ('+courseName(a.courseId)+')', title:a.name, type:'School', color:'var(--sky)', date:iso, time:null, location:''}); });
   state.exams.forEach(e=>{ if(e.date===iso) out.push({label:e.name, title:e.name, type:'Exam', color:'var(--rose)', date:iso, time:null, location:''}); });
   state.plannerBlocks.forEach(b=>{ if(b.date===iso) out.push({label:b.text, title:b.text, type:'Planned', color:'var(--sage)', date:iso, time:null, location:'', blockId:b.id}); });
   state.doctorAppointments.forEach(d=>{ if(d.date===iso) out.push({label:(d.time?d.time+' — ':'')+d.name+(d.doctorName?' with '+d.doctorName:''), title:d.name+(d.doctorName?' with '+d.doctorName:''), type:'Doctor Appointment', color:'var(--rose)', date:iso, time:d.time||null, location:d.location||''}); });
@@ -4068,7 +4092,8 @@ function renderGoalPanel(){
                 ${miniIcon(iconX(), `removeMilestone('dream','${g.id}',${i})`, 'Remove')}
               </div>`).join('') || '<div class="empty-note">No milestones yet — just a dream on the horizon.</div>'}
           </div>
-          <div style="display:flex;gap:8px;margin-top:12px;">
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="openAddMilestoneModal('dream','${g.id}')">+ Add Milestone</button>
             <button class="btn btn-outline btn-sm" onclick="editGoal('dream','${g.id}')">Edit goal</button>
             <button class="btn btn-ghost btn-sm" onclick="removeGoal('dream','${g.id}')">Remove goal</button>
           </div>
@@ -4086,7 +4111,8 @@ function renderGoalPanel(){
                 ${miniIcon(iconX(), `removeMilestone('${activeGoalTab}','${g.id}',${i})`, 'Remove')}
               </div>`).join('')}
           </div>
-          <div style="display:flex;gap:8px;margin-top:12px;">
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+            <button class="btn btn-outline btn-sm" onclick="openAddMilestoneModal('${activeGoalTab}','${g.id}')">+ Add Milestone</button>
             <button class="btn btn-outline btn-sm" onclick="editGoal('${activeGoalTab}','${g.id}')">Edit goal</button>
             <button class="btn btn-ghost btn-sm" onclick="removeGoal('${activeGoalTab}','${g.id}')">Remove goal</button>
           </div>
@@ -4155,6 +4181,18 @@ function removeMilestone(tab,id,idx){
     g.progress = g.milestones.length ? Math.round(done/g.milestones.length*100) : g.progress;
   }
   renderGoalPanel(); renderGoals();
+}
+function openAddMilestoneModal(tab,id){
+  const g = state.goals[tab].find(x=>x.id===id); if(!g) return;
+  openEditModal('Add Milestone', [{key:'t', label:'Milestone', value:''}], v=>{
+    if(!v.t.trim()) return;
+    g.milestones.push({t:v.t.trim(), d:false});
+    if(tab!=='dream'){
+      const done = g.milestones.filter(m=>m.d).length;
+      g.progress = Math.round(done/g.milestones.length*100);
+    }
+    renderGoalPanel(); renderGoals();
+  });
 }
 function addGoal(){
   const title = document.getElementById('newGoalTitle').value.trim();
