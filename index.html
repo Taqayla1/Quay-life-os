@@ -524,6 +524,7 @@ const state = {
       goalSnapshot: true,
       quickAccess: true,
       reflection: true,
+      chores: true,
     },
   },
   priorities: [
@@ -612,6 +613,15 @@ const state = {
     {id:'t13', title:'Brain dump: workshop idea for female entrepreneurs', desc:'', due:null, priority:'Low', category:'Idea', business:'Brand', est:'—', status:'inbox', notes:''},
     {id:'t14', title:'Brain dump: partner with local boutique for referrals', desc:'', due:null, priority:'Low', category:'Idea', business:'Travel', est:'—', status:'inbox', notes:''},
     {id:'t15', title:'Sent invoice — Whitmore wedding party', desc:'', due:daysFromNow(20), priority:'Low', category:'Finance', business:'Travel', est:'—', status:'completed', notes:'Paid'},
+  ],
+
+  chores: [
+    {id:'ch1', name:'Vacuum & mop', frequency:'Weekly', day:'Saturday', lastCompleted:null},
+    {id:'ch2', name:'Laundry', frequency:'Weekly', day:'Sunday', lastCompleted:null},
+    {id:'ch3', name:'Take out trash / recycling', frequency:'Weekly', day:'Thursday', lastCompleted:null},
+    {id:'ch4', name:'Wipe down kitchen & bathrooms', frequency:'Weekly', day:'Friday', lastCompleted:null},
+    {id:'ch5', name:'Deep clean fridge', frequency:'Monthly', dayOfMonth:1, lastCompleted:null},
+    {id:'ch6', name:'Change air filter', frequency:'Monthly', dayOfMonth:15, lastCompleted:null},
   ],
 
   courses: [
@@ -917,6 +927,35 @@ function daysUntil(iso){
   const t = new Date(); t.setHours(0,0,0,0);
   return Math.round((d-t)/86400000);
 }
+function currentWeekRange(){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const dow = (now.getDay()+6)%7; // Mon=0
+  const start = new Date(now); start.setDate(now.getDate()-dow);
+  const end = new Date(start); end.setDate(start.getDate()+6);
+  return {start, end};
+}
+function isChoreDoneThisCycle(chore){
+  if(!chore.lastCompleted) return false;
+  const completed = new Date(chore.lastCompleted+'T00:00:00');
+  const now = new Date(); now.setHours(0,0,0,0);
+  if(chore.frequency==='Weekly'){
+    const {start} = currentWeekRange();
+    return completed >= start;
+  }
+  return completed.getFullYear()===now.getFullYear() && completed.getMonth()===now.getMonth();
+}
+function choresDueThisWeek(){
+  const {start, end} = currentWeekRange();
+  return state.chores.filter(c=>{
+    if(isChoreDoneThisCycle(c)) return false;
+    if(c.frequency==='Weekly') return true;
+    // Monthly: due if its day-of-month falls within this week's date range
+    for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+      if(d.getDate()===c.dayOfMonth) return true;
+    }
+    return false;
+  });
+}
 function money(n){ return '$'+Number(n).toLocaleString('en-US',{maximumFractionDigits:0}); }
 function uid(prefix){ return prefix+'_'+Math.random().toString(36).slice(2,9); }
 function numOr(val, fallback){ const n = parseFloat(val); return isNaN(n) ? fallback : n; }
@@ -1179,6 +1218,19 @@ function renderHome(){
       </div>` : ''}
     </div>` : ''}
 
+    ${w.chores ? `
+    <div class="card" style="margin-top:18px;">
+      <div class="card-head"><h3>Chores This Week</h3><span class="eyebrow">${choresDueThisWeek().length} remaining</span></div>
+      <div class="row-list">
+        ${choresDueThisWeek().length ? choresDueThisWeek().map(c=>`
+          <div class="list-row">
+            <span class="chk" onclick="toggleChore('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg></span>
+            <div class="rtitle"><div class="t">${esc(c.name)}</div></div>
+            <span class="chip category">${c.frequency==='Weekly'?esc(c.day):'Day '+c.dayOfMonth}</span>
+          </div>`).join('') : '<div class="empty-note">All chores done for this week — nice.</div>'}
+      </div>
+    </div>` : ''}
+
     ${w.quickAccess ? `
     <div class="card" style="margin-top:18px;">
       <div class="card-head"><h3>Quick Access</h3><span class="eyebrow">Jump To</span></div>
@@ -1361,6 +1413,37 @@ function renderTasks(){
       <div class="card-head"><h3>Workflow Board</h3><span class="eyebrow">Drag Isn't Required — Use Move ›</span></div>
       <div class="kanban" id="kanbanBoard"></div>
     </div>
+
+    <div class="grid grid-2" style="margin-top:18px;align-items:start;">
+      <div class="card">
+        <div class="card-head"><h3>Weekly Chores</h3><span class="eyebrow">${state.chores.filter(c=>c.frequency==='Weekly' && isChoreDoneThisCycle(c)).length}/${state.chores.filter(c=>c.frequency==='Weekly').length} done</span></div>
+        <div class="row-list">
+          ${state.chores.filter(c=>c.frequency==='Weekly').map(c=>`
+            <div class="list-row">
+              <span class="chk ${isChoreDoneThisCycle(c)?'done':''}" onclick="toggleChore('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg></span>
+              <div class="rtitle"><div class="t ${isChoreDoneThisCycle(c)?'text-done':''}">${esc(c.name)}</div></div>
+              <div class="rmeta">${esc(c.day)}</div>
+              ${miniIcon(iconPencil(), `editChore('${c.id}')`, 'Edit')}
+              ${miniIcon(iconX(), `removeChore('${c.id}')`, 'Remove')}
+            </div>`).join('') || '<div class="empty-note">No weekly chores yet.</div>'}
+        </div>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="openAddChoreModal('Weekly')">+ Add Weekly Chore</button>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Monthly Chores</h3><span class="eyebrow">${state.chores.filter(c=>c.frequency==='Monthly' && isChoreDoneThisCycle(c)).length}/${state.chores.filter(c=>c.frequency==='Monthly').length} done</span></div>
+        <div class="row-list">
+          ${state.chores.filter(c=>c.frequency==='Monthly').map(c=>`
+            <div class="list-row">
+              <span class="chk ${isChoreDoneThisCycle(c)?'done':''}" onclick="toggleChore('${c.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg></span>
+              <div class="rtitle"><div class="t ${isChoreDoneThisCycle(c)?'text-done':''}">${esc(c.name)}</div></div>
+              <div class="rmeta">Day ${c.dayOfMonth}</div>
+              ${miniIcon(iconPencil(), `editChore('${c.id}')`, 'Edit')}
+              ${miniIcon(iconX(), `removeChore('${c.id}')`, 'Remove')}
+            </div>`).join('') || '<div class="empty-note">No monthly chores yet.</div>'}
+        </div>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="openAddChoreModal('Monthly')">+ Add Monthly Chore</button>
+      </div>
+    </div>
   `;
   document.getElementById('brainDumpInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter') addBrainDump(); });
   renderInbox();
@@ -1508,6 +1591,50 @@ function renderKanban(){
 function moveTask(id,newStatus){
   const t = state.tasks.find(x=>x.id===id); t.status = newStatus;
   renderKanban(); renderTaskSections(); renderInbox(); renderHome();
+}
+function toggleChore(id){
+  const c = state.chores.find(x=>x.id===id); if(!c) return;
+  if(isChoreDoneThisCycle(c)){
+    c.lastCompleted = null;
+  } else {
+    c.lastCompleted = new Date().toISOString().slice(0,10);
+  }
+  renderTasks(); renderHome();
+}
+function editChore(id){
+  const c = state.chores.find(x=>x.id===id); if(!c) return;
+  const fields = [{key:'name', label:'Chore', value:c.name}];
+  if(c.frequency==='Weekly'){
+    fields.push({key:'day', label:'Day of Week', type:'select', value:c.day, options:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']});
+  } else {
+    fields.push({key:'dayOfMonth', label:'Day of Month (1-31)', type:'number', value:c.dayOfMonth});
+  }
+  openEditModal('Edit Chore', fields, v=>{
+    c.name = v.name.trim()||c.name;
+    if(c.frequency==='Weekly') c.day = v.day;
+    else c.dayOfMonth = Math.max(1,Math.min(31,intOr(v.dayOfMonth, c.dayOfMonth)));
+    renderTasks(); renderHome();
+  });
+}
+function removeChore(id){
+  state.chores = state.chores.filter(x=>x.id!==id);
+  renderTasks(); renderHome();
+}
+function openAddChoreModal(frequency){
+  const fields = [{key:'name', label:'Chore', value:''}];
+  if(frequency==='Weekly'){
+    fields.push({key:'day', label:'Day of Week', type:'select', value:'Monday', options:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']});
+  } else {
+    fields.push({key:'dayOfMonth', label:'Day of Month (1-31)', type:'number', value:'1'});
+  }
+  openEditModal('Add '+frequency+' Chore', fields, v=>{
+    if(!v.name.trim()) return;
+    const chore = {id:uid('ch'), name:v.name.trim(), frequency, lastCompleted:null};
+    if(frequency==='Weekly') chore.day = v.day;
+    else chore.dayOfMonth = Math.max(1,Math.min(31,intOr(v.dayOfMonth, 1)));
+    state.chores.push(chore);
+    renderTasks(); renderHome();
+  });
 }
 
 /* =========================================================
@@ -4169,6 +4296,7 @@ const homeWidgetLabels = [
   {key:'agenda', label:'Daily Agenda'},
   {key:'deadlines', label:'Upcoming Deadlines & Appointments'},
   {key:'goalSnapshot', label:'Goal Progress Snapshot'},
+  {key:'chores', label:'Chores This Week'},
   {key:'quickAccess', label:'Quick Access'},
   {key:'reflection', label:'Daily Reflection'},
 ];
