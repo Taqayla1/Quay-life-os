@@ -756,8 +756,8 @@ const state = {
     {day:'Sunday', theme:'Sunday Meal Prep', recipeIds:[]},
   ],
   recipes: [
-    {id:'r1', title:'Ground Turkey Tacos', ingredients:['1 lb ground turkey','Taco seasoning','Corn tortillas','Shredded cheese','Lettuce','Salsa'], notes:'Quick weeknight go-to for Taco Tuesday'},
-    {id:'r2', title:'Sheet Pan Chicken Fajitas', ingredients:['Chicken breast','Bell peppers','Onion','Fajita seasoning','Olive oil','Flour tortillas'], notes:''},
+    {id:'r1', title:'Ground Turkey Tacos', ingredients:['1 lb ground turkey','Taco seasoning','Corn tortillas','Shredded cheese','Lettuce','Salsa'], time:'10 min prep · 15 min cook', instructions:'1. Brown ground turkey in a skillet over medium heat.\n2. Add taco seasoning and a splash of water, simmer 5 min.\n3. Warm tortillas, assemble with turkey, cheese, lettuce, and salsa.', notes:'Quick weeknight go-to for Taco Tuesday'},
+    {id:'r2', title:'Sheet Pan Chicken Fajitas', ingredients:['Chicken breast','Bell peppers','Onion','Fajita seasoning','Olive oil','Flour tortillas'], time:'15 min prep · 25 min cook', instructions:'1. Preheat oven to 425°F.\n2. Slice chicken and vegetables, toss with oil and seasoning on a sheet pan.\n3. Roast 20-25 min, stirring halfway.\n4. Serve with warm tortillas.', notes:''},
   ],
   groceryList: [
     {id:'g1', text:'Eggs', checked:false},
@@ -2861,11 +2861,13 @@ function glowPanelHTML(tab){
       <div class="grid grid-3" style="margin-bottom:16px;">
         ${state.recipes.map(r=>`
           <div class="stat" draggable="true" ondragstart="handleRecipeDragStart('${r.id}')" ondragover="event.preventDefault()" ondrop="handleRecipeDrop('${r.id}')" style="cursor:grab;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
               <div style="font-weight:500;font-size:13.5px;display:flex;align-items:center;gap:6px;"><span style="color:var(--ink-soft);font-size:12px;">⠿</span>${esc(r.title)}</div>
               <div style="display:flex;gap:4px;">${miniIcon(iconPencil(), `editRecipe('${r.id}')`, 'Edit')}${miniIcon(iconX(), `removeRecipe('${r.id}')`, 'Remove')}</div>
             </div>
-            <div class="empty-note" style="margin-bottom:10px;">${r.ingredients.map(esc).join(', ')}</div>
+            ${r.time ? `<div class="chip category" style="margin-bottom:10px;display:inline-block;">${esc(r.time)}</div>` : ''}
+            <div class="empty-note" style="margin-bottom:10px;"><b style="color:var(--ink);">Ingredients:</b> ${r.ingredients.map(esc).join(', ')}</div>
+            ${r.instructions ? `<div class="empty-note" style="margin-bottom:10px;white-space:pre-wrap;"><b style="color:var(--ink);">Instructions:</b><br>${esc(r.instructions)}</div>` : ''}
             ${r.notes ? `<div class="delta" style="margin-bottom:10px;">${esc(r.notes)}</div>` : ''}
             <button class="btn btn-outline btn-sm" onclick="addRecipeToGroceryList('${r.id}')">+ Add ingredients to grocery list</button>
           </div>`).join('')}
@@ -2874,6 +2876,8 @@ function glowPanelHTML(tab){
         <div class="field"><label>Recipe Title</label><input id="newRecipeTitle" type="text" placeholder="e.g. Turkey Chili"></div>
         <div class="field" style="grid-column:span 2;"><label>Ingredients (comma-separated)</label><input id="newRecipeIngredients" type="text" placeholder="1 lb ground turkey, kidney beans, diced tomatoes…"></div>
       </div>
+      <div class="field"><label>Prep / Cook Time</label><input id="newRecipeTime" type="text" placeholder="e.g. 10 min prep · 20 min cook"></div>
+      <div class="field"><label>Instructions</label><textarea id="newRecipeInstructions" placeholder="1. Preheat oven…&#10;2. …"></textarea></div>
       <div class="field"><label>Notes</label><input id="newRecipeNotes" type="text" placeholder="Optional notes"></div>
       <button class="btn btn-gold btn-sm" onclick="addRecipe()">Add Recipe</button>
     </div>
@@ -3532,10 +3536,14 @@ function handleRecipeDrop(targetId){
 function addRecipe(){
   const title = document.getElementById('newRecipeTitle').value.trim();
   const ingredientsRaw = document.getElementById('newRecipeIngredients').value.trim();
+  const time = document.getElementById('newRecipeTime').value.trim();
+  const instructions = document.getElementById('newRecipeInstructions').value.trim();
   const notes = document.getElementById('newRecipeNotes').value.trim();
   if(!title) return;
   const ingredients = ingredientsRaw ? ingredientsRaw.split(',').map(s=>s.trim()).filter(Boolean) : [];
-  state.recipes.push({id:uid('r'), title, ingredients, notes});
+  state.recipes.push({id:uid('r'), title, ingredients, time, instructions, notes});
+  document.getElementById('newRecipeTime').value='';
+  document.getElementById('newRecipeInstructions').value='';
   renderGlowUp();
 }
 function editRecipe(id){
@@ -3543,10 +3551,14 @@ function editRecipe(id){
   openEditModal('Edit Recipe', [
     {key:'title', label:'Recipe Title', value:r.title},
     {key:'ingredients', label:'Ingredients (comma-separated)', value:r.ingredients.join(', ')},
+    {key:'time', label:'Prep / Cook Time', value:r.time||''},
+    {key:'instructions', label:'Instructions', type:'textarea', value:r.instructions||''},
     {key:'notes', label:'Notes', value:r.notes},
   ], v=>{
     r.title = v.title.trim()||r.title;
     r.ingredients = v.ingredients.trim() ? v.ingredients.split(',').map(s=>s.trim()).filter(Boolean) : [];
+    r.time = v.time.trim();
+    r.instructions = v.instructions.trim();
     r.notes = v.notes.trim();
     renderGlowUp();
   });
