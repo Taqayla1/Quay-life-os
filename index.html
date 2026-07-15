@@ -1111,7 +1111,7 @@ function renderHome(){
   const hour = new Date().getHours();
   const greet = hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
   const w = state.settings.homeWidgets;
-  const todayTasks = state.tasks.filter(t=>t.status==='today' && t.status!=='completed');
+  const todayTasks = state.tasks.filter(t=>t.status!=='completed' && (t.status==='today' || daysUntil(t.due)===0));
   const overdue = state.tasks.filter(t=>t.status==='overdue');
   const upcomingDeadlines = state.tasks.filter(t=>{
     if(t.status==='completed') return false;
