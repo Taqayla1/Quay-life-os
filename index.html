@@ -747,13 +747,13 @@ const state = {
   startingWeight: 168,
   macros: {calGoal:1750, calToday:1180, proteinGoal:120, proteinToday:78, carbsGoal:160, carbsToday:95, fatGoal:55, fatToday:38, waterGoal:8, waterToday:5},
   mealPlan: [
-    {day:'Monday', theme:'Meatless Monday'},
-    {day:'Tuesday', theme:'Taco Tuesday'},
-    {day:'Wednesday', theme:'Sheet Pan Wednesday'},
-    {day:'Thursday', theme:'Slow Cooker Thursday'},
-    {day:'Friday', theme:'Pizza Party Friday'},
-    {day:'Saturday', theme:'Leftovers / Takeout'},
-    {day:'Sunday', theme:'Sunday Meal Prep'},
+    {day:'Monday', theme:'Meatless Monday', recipeIds:[]},
+    {day:'Tuesday', theme:'Taco Tuesday', recipeIds:[]},
+    {day:'Wednesday', theme:'Sheet Pan Wednesday', recipeIds:[]},
+    {day:'Thursday', theme:'Slow Cooker Thursday', recipeIds:[]},
+    {day:'Friday', theme:'Pizza Party Friday', recipeIds:[]},
+    {day:'Saturday', theme:'Leftovers / Takeout', recipeIds:[]},
+    {day:'Sunday', theme:'Sunday Meal Prep', recipeIds:[]},
   ],
   recipes: [
     {id:'r1', title:'Ground Turkey Tacos', ingredients:['1 lb ground turkey','Taco seasoning','Corn tortillas','Shredded cheese','Lettuce','Salsa'], notes:'Quick weeknight go-to for Taco Tuesday'},
@@ -2828,24 +2828,41 @@ function glowPanelHTML(tab){
     </div>
 
     <div class="card" style="margin-top:18px;">
-      <div class="card-head"><h3>Meal Planning Schedule</h3><span class="eyebrow">Weekly Themes</span></div>
+      <div class="card-head"><h3>Meal Week Planner</h3><span class="eyebrow">Themes + Linked Recipes</span></div>
+      <p class="card-sub" style="margin-top:-6px;">Attach any saved recipe to a day — pulls straight from your Recipes Board below.</p>
       <div class="row-list">
         ${state.mealPlan.map((m,i)=>`
-          <div class="list-row">
-            <span class="dot" style="background:var(--gold)"></span>
-            <div class="rtitle"><div class="t">${esc(m.day)}</div></div>
-            <div class="rmeta" style="display:flex;align-items:center;gap:7px;">${esc(m.theme)||'—'}${miniIcon(iconPencil(), `editMealPlanDay(${i})`, 'Edit')}</div>
+          <div class="list-row" style="align-items:flex-start;">
+            <span class="dot" style="background:var(--gold);margin-top:6px;"></span>
+            <div class="rtitle">
+              <div class="t" style="display:flex;align-items:center;gap:6px;">${esc(m.day)} — ${esc(m.theme)||'—'}${miniIcon(iconPencil(), `editMealPlanDay(${i})`, 'Edit theme')}</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;">
+                ${(m.recipeIds||[]).map(rid=>{
+                  const r = state.recipes.find(x=>x.id===rid);
+                  if(!r) return '';
+                  return `<span class="chip category" style="display:inline-flex;align-items:center;gap:5px;">${esc(r.title)}<span onclick="removeRecipeFromMealDay(${i},'${rid}')" style="cursor:pointer;color:var(--ink-soft);">×</span></span>`;
+                }).join('') || '<span class="empty-note">No recipes linked yet</span>'}
+              </div>
+              ${state.recipes.length ? `
+              <div style="display:flex;gap:6px;margin-top:8px;">
+                <select id="mealRecipeSelect_${i}" style="flex:1;">
+                  ${state.recipes.map(r=>`<option value="${r.id}">${esc(r.title)}</option>`).join('')}
+                </select>
+                <button class="btn btn-outline btn-sm" onclick="addRecipeToMealDay(${i})">+ Add Recipe</button>
+              </div>` : `<div class="empty-note" style="margin-top:6px;">Save a recipe below to start linking it to days.</div>`}
+            </div>
           </div>`).join('')}
       </div>
     </div>
 
     <div class="card" style="margin-top:18px;">
       <div class="card-head"><h3>Recipes Board</h3><span class="eyebrow">${state.recipes.length} saved</span></div>
+      <p class="card-sub" style="margin-top:-6px;">Drag a card to reorder your board.</p>
       <div class="grid grid-3" style="margin-bottom:16px;">
         ${state.recipes.map(r=>`
-          <div class="stat">
+          <div class="stat" draggable="true" ondragstart="handleRecipeDragStart('${r.id}')" ondragover="event.preventDefault()" ondrop="handleRecipeDrop('${r.id}')" style="cursor:grab;">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-              <div style="font-weight:500;font-size:13.5px;">${esc(r.title)}</div>
+              <div style="font-weight:500;font-size:13.5px;display:flex;align-items:center;gap:6px;"><span style="color:var(--ink-soft);font-size:12px;">⠿</span>${esc(r.title)}</div>
               <div style="display:flex;gap:4px;">${miniIcon(iconPencil(), `editRecipe('${r.id}')`, 'Edit')}${miniIcon(iconX(), `removeRecipe('${r.id}')`, 'Remove')}</div>
             </div>
             <div class="empty-note" style="margin-bottom:10px;">${r.ingredients.map(esc).join(', ')}</div>
@@ -2865,7 +2882,7 @@ function glowPanelHTML(tab){
       <div class="card-head"><h3>Grocery List</h3><span class="eyebrow">${state.groceryList.filter(g=>!g.checked).length} to buy</span></div>
       <div class="inline-add" style="margin-bottom:12px;">
         <input id="groceryInput" type="text" placeholder="Add an item…">
-        <button class="btn btn-gold" onclick="addGroceryItem()">Add</button>
+        <button class="btn btn-gold" onclick="addGroceryItem('groceryInput')">Add</button>
       </div>
       <div class="row-list">
         ${state.groceryList.map(g=>`
@@ -3486,6 +3503,32 @@ function editMealPlanDay(i){
     renderGlowUp();
   });
 }
+function addRecipeToMealDay(i){
+  const m = state.mealPlan[i]; if(!m) return;
+  const select = document.getElementById('mealRecipeSelect_'+i);
+  if(!select) return;
+  const rid = select.value;
+  if(!m.recipeIds) m.recipeIds = [];
+  if(!m.recipeIds.includes(rid)) m.recipeIds.push(rid);
+  renderGlowUp();
+}
+function removeRecipeFromMealDay(i,rid){
+  const m = state.mealPlan[i]; if(!m || !m.recipeIds) return;
+  m.recipeIds = m.recipeIds.filter(x=>x!==rid);
+  renderGlowUp();
+}
+let draggedRecipeId = null;
+function handleRecipeDragStart(id){ draggedRecipeId = id; }
+function handleRecipeDrop(targetId){
+  if(!draggedRecipeId || draggedRecipeId===targetId) return;
+  const fromIdx = state.recipes.findIndex(r=>r.id===draggedRecipeId);
+  const toIdx = state.recipes.findIndex(r=>r.id===targetId);
+  if(fromIdx===-1 || toIdx===-1) return;
+  const [moved] = state.recipes.splice(fromIdx,1);
+  state.recipes.splice(toIdx,0,moved);
+  draggedRecipeId = null;
+  renderGlowUp();
+}
 function addRecipe(){
   const title = document.getElementById('newRecipeTitle').value.trim();
   const ingredientsRaw = document.getElementById('newRecipeIngredients').value.trim();
@@ -3520,27 +3563,28 @@ function addRecipeToGroceryList(id){
   });
   renderGlowUp();
 }
-function addGroceryItem(){
-  const input = document.getElementById('groceryInput');
+function addGroceryItem(inputId){
+  const input = document.getElementById(inputId||'groceryInput');
+  if(!input) return;
   const val = input.value.trim();
   if(!val) return;
   state.groceryList.push({id:uid('g'), text:val, checked:false});
   input.value='';
-  renderGlowUp();
+  renderGlowUp(); renderPlanner();
 }
 function toggleGroceryItem(id){
-  const g = state.groceryList.find(x=>x.id===id); g.checked = !g.checked; renderGlowUp();
+  const g = state.groceryList.find(x=>x.id===id); g.checked = !g.checked; renderGlowUp(); renderPlanner();
 }
 function editGroceryItem(id){
   const g = state.groceryList.find(x=>x.id===id); if(!g) return;
   openEditModal('Edit Grocery Item', [{key:'text', label:'Item', value:g.text}], v=>{
     g.text = v.text.trim()||g.text;
-    renderGlowUp();
+    renderGlowUp(); renderPlanner();
   });
 }
 function removeGroceryItem(id){
   state.groceryList = state.groceryList.filter(x=>x.id!==id);
-  renderGlowUp();
+  renderGlowUp(); renderPlanner();
 }
 
 /* =========================================================
@@ -3710,6 +3754,24 @@ function renderPlanner(){
         </div>
         <button class="btn btn-outline btn-sm" onclick="openAddDoctorAppointmentModal()">+ Add Appointment</button>
         <p class="card-sub" style="margin:10px 0 0;">Appointments show up automatically on the calendar above, and each one has its own + Calendar button to export to Google Calendar.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="card-head"><h3>Shopping List</h3><span class="eyebrow">${state.groceryList.filter(g=>!g.checked).length} to buy</span></div>
+      <p class="card-sub" style="margin-top:-6px;">Same list as your Grocery List under Glow Up — handy right here whenever you've added "Grocery Shopping" to your week.</p>
+      <div class="inline-add" style="margin-bottom:12px;">
+        <input id="groceryInputPlanner" type="text" placeholder="Add an item…">
+        <button class="btn btn-gold" onclick="addGroceryItem('groceryInputPlanner')">Add</button>
+      </div>
+      <div class="row-list">
+        ${state.groceryList.map(g=>`
+          <div class="list-row">
+            <span class="chk ${g.checked?'done':''}" onclick="toggleGroceryItem('${g.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg></span>
+            <div class="rtitle"><div class="t ${g.checked?'text-done':''}">${esc(g.text)}</div></div>
+            ${miniIcon(iconPencil(), `editGroceryItem('${g.id}')`, 'Edit')}
+            ${miniIcon(iconX(), `removeGroceryItem('${g.id}')`, 'Remove')}
+          </div>`).join('') || '<div class="empty-note">List is empty.</div>'}
       </div>
     </div>
 
