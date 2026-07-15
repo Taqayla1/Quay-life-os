@@ -447,6 +447,7 @@ tr:last-child td{border-bottom:none;}
 
     <div class="nav-group-label">Personal</div>
     <div class="nav-item" data-hub="glowup"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.6-9.5-9C.7 8.4 2.5 4.5 6.2 4.1c2-.2 3.6.8 5.8 3 2.2-2.2 3.8-3.2 5.8-3 3.7.4 5.5 4.3 3.7 7.9C19 16.4 12 21 12 21Z"/></svg>Glow Up</div>
+    <div class="nav-item" data-hub="faith"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M7 7l5-4 5 4M5 12h14M6 21h12l-1.5-6h-9L6 21Z"/></svg>Faith</div>
     <div class="nav-item" data-hub="planner"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Planner</div>
     <div class="nav-item" data-hub="goals"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>Goals</div>
     <div class="nav-item" data-hub="ideas"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6h5.4c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3Z"/></svg>Idea Vault</div>
@@ -490,6 +491,8 @@ tr:last-child td{border-bottom:none;}
     <section class="hub" id="hub-finance"></section>
     <!-- GLOW UP HUB -->
     <section class="hub" id="hub-glowup"></section>
+    <!-- FAITH HUB -->
+    <section class="hub" id="hub-faith"></section>
     <!-- PLANNER HUB -->
     <section class="hub" id="hub-planner"></section>
     <!-- GOALS HUB -->
@@ -800,6 +803,44 @@ const state = {
   ],
   journalPromptIndex: 0,
   journalEntries: [],
+
+  /* ---- Faith Hub ---- */
+  faithPrayerJournal: [
+    {id:'pj1', date:daysFromNow(-1), entry:'Grateful for a quiet morning before the day got busy. Prayed for peace over the week ahead.'},
+  ],
+  faithPrayerRequests: [
+    {id:'pr1', text:'Wisdom for a big decision at work', category:'Work', dateAdded:daysFromNow(-3), answered:false, answeredNote:'', answeredDate:null},
+    {id:'pr2', text:'Healing for a family member', category:'Healing', dateAdded:daysFromNow(-7), answered:false, answeredNote:'', answeredDate:null},
+    {id:'pr3', text:'Grateful for my son\'s health', category:'Gratitude', dateAdded:daysFromNow(-10), answered:true, answeredNote:'Continued good health at his checkup.', answeredDate:daysFromNow(-2)},
+  ],
+  faithPrayerCategories: ['Personal','Family','Friends','Work','Gratitude','Healing'],
+  faithVerses: [
+    {ref:'Philippians 4:13', text:'I can do all things through Christ which strengtheneth me.'},
+    {ref:'Jeremiah 29:11', text:'For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end.'},
+    {ref:'Psalm 46:1', text:'God is our refuge and strength, a very present help in trouble.'},
+    {ref:'Proverbs 3:5-6', text:'Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.'},
+    {ref:'Joshua 1:9', text:'Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.'},
+    {ref:'Romans 8:28', text:'And we know that all things work together for good to them that love God, to them who are the called according to his purpose.'},
+    {ref:'Psalm 23:1', text:'The LORD is my shepherd; I shall not want.'},
+    {ref:'Isaiah 41:10', text:'Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee; yea, I will help thee.'},
+    {ref:'Matthew 6:33', text:'But seek ye first the kingdom of God, and his righteousness; and all these things shall be added unto you.'},
+    {ref:'2 Corinthians 12:9', text:'My grace is sufficient for thee: for my strength is made perfect in weakness.'},
+    {ref:'Psalm 118:24', text:'This is the day which the LORD hath made; we will rejoice and be glad in it.'},
+    {ref:'Philippians 4:6-7', text:'Be careful for nothing; but in every thing by prayer and supplication with thanksgiving let your requests be made known unto God.'},
+    {ref:'Psalm 34:18', text:'The LORD is nigh unto them that are of a broken heart; and saveth such as be of a contrite spirit.'},
+    {ref:'Romans 15:13', text:'Now the God of hope fill you with all joy and peace in believing, that ye may abound in hope, through the power of the Holy Ghost.'},
+    {ref:'Psalm 27:1', text:'The LORD is my light and my salvation; whom shall I fear? the LORD is the strength of my life; of whom shall I be afraid?'},
+  ],
+  faithSavedVerses: [],
+  faithReflections: [],
+  faithMemoryVerse: {ref:'Philippians 4:13', text:'I can do all things through Christ which strengtheneth me.', progress:40},
+  faithMorningEntries: [],
+  faithEveningEntries: [],
+  faithBibleStudies: [
+    {id:'bs1', title:'The Armor of God', date:daysFromNow(-5), book:'Ephesians', chapters:'6:10-18', notes:'Studied each piece of armor and what it represents.', keyLessons:'Spiritual battles require spiritual preparation, not just willpower.', questions:'How do I practically "put on" the armor each morning?', application:'Start each day naming one piece of armor and praying over it.', complete:true},
+  ],
+  faithReadingPlan: {name:'New Testament in a Year', currentBook:'Matthew', chaptersCompleted:8, totalChapters:260, streak:3},
+
   personalPalette: {
     neutrals: [
       {id:'pp_n1', hex:'#4B3521', name:'Chocolate Brown'},
@@ -1094,6 +1135,8 @@ document.getElementById('globalSearch').addEventListener('input', (e)=>{
   state.savingsGoals.forEach(s=>{ if(s.name.toLowerCase().includes(q)) hits.push({label:s.name, type:'Savings Goal', sub:money(s.saved)+' / '+money(s.target), hub:'finance'}); });
   state.library.forEach(b=>{ if(b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q)) hits.push({label:b.title, type:'Book', sub:b.status, hub:'glowup'}); });
   state.recipes.forEach(r=>{ if(r.title.toLowerCase().includes(q)) hits.push({label:r.title, type:'Recipe', sub:'Nutrition & Macros', hub:'glowup'}); });
+  state.faithPrayerRequests.forEach(p=>{ if(p.text.toLowerCase().includes(q)) hits.push({label:p.text, type:'Prayer Request', sub:p.category, hub:'faith'}); });
+  state.faithBibleStudies.forEach(s=>{ if(s.title.toLowerCase().includes(q)) hits.push({label:s.title, type:'Bible Study', sub:s.book, hub:'faith'}); });
   box.style.display='block';
   box.innerHTML = hits.length ? hits.slice(0,8).map(h=>`
     <div class="list-row" style="cursor:pointer;" onclick="goToHub('${h.hub}');document.getElementById('globalSearch').value='';document.getElementById('searchResults').style.display='none';">
@@ -1250,6 +1293,7 @@ function renderHome(){
         ${quickTile('Brand Studio','brand',iconBrand())}
         ${quickTile('Finance','finance',iconFinance())}
         ${quickTile('Glow Up','glowup',iconGlow())}
+        ${quickTile('Faith','faith',iconFaith())}
         ${quickTile('Planner','planner',iconTasks())}
         ${quickTile('Goals','goals',iconTasks())}
         ${quickTile('Idea Vault','ideas',iconTasks())}
@@ -1365,8 +1409,6 @@ const kanbanFlow = ['inbox','todo','inprogress','waiting','completed'];
 function taskCategories(){ return [...new Set(state.tasks.map(t=>t.category))]; }
 
 function renderTasks(){
-  const completed = state.tasks.filter(t=>t.status==='completed').length;
-  const pct = Math.round(completed/(state.tasks.length||1)*100);
   const cats = taskCategories();
 
   document.getElementById('hub-tasks').innerHTML = `
@@ -1376,13 +1418,7 @@ function renderTasks(){
       <p>Brain dump, plan, and move things through to done.</p>
     </div>
 
-    <div class="grid grid-4" style="margin-bottom:18px;">
-      <div class="stat"><span class="eyebrow">Completion</span><div class="num">${pct}%</div>
-        <div class="pbar-track" style="margin-top:8px;"><div class="pbar-fill" style="width:${pct}%"></div></div></div>
-      <div class="stat"><span class="eyebrow">Today</span><div class="num">${countByBucket('today')}</div></div>
-      <div class="stat"><span class="eyebrow">Overdue</span><div class="num" style="color:var(--rose)">${countByBucket('overdue')}</div></div>
-      <div class="stat"><span class="eyebrow">Upcoming</span><div class="num">${countByBucket('upcoming')}</div></div>
-    </div>
+    <div class="grid grid-4" style="margin-bottom:18px;" id="taskStatsGrid"></div>
 
     <div class="card" style="margin-bottom:18px;">
       <div class="card-head"><h3>Add A Task</h3><span class="eyebrow">All Fields</span></div>
@@ -1458,6 +1494,21 @@ function renderTasks(){
   renderInbox();
   renderTaskSections();
   renderKanban();
+  renderTaskStats();
+}
+
+function renderTaskStats(){
+  const el = document.getElementById('taskStatsGrid');
+  if(!el) return;
+  const completed = state.tasks.filter(t=>t.status==='completed').length;
+  const pct = Math.round(completed/(state.tasks.length||1)*100);
+  el.innerHTML = `
+    <div class="stat"><span class="eyebrow">Completion</span><div class="num">${pct}%</div>
+      <div class="pbar-track" style="margin-top:8px;"><div class="pbar-fill" style="width:${pct}%"></div></div></div>
+    <div class="stat"><span class="eyebrow">Today</span><div class="num">${countByBucket('today')}</div></div>
+    <div class="stat"><span class="eyebrow">Overdue</span><div class="num" style="color:var(--rose)">${countByBucket('overdue')}</div></div>
+    <div class="stat"><span class="eyebrow">Upcoming</span><div class="num">${countByBucket('upcoming')}</div></div>
+  `;
 }
 
 function countByBucket(bucket){
@@ -1489,10 +1540,10 @@ function addBrainDump(){
   if(!val) return;
   state.tasks.push({id:uid('t'), title:val, desc:'', due:null, priority:'Low', category:'Idea', business:'Personal', est:'—', status:'inbox', notes:''});
   input.value='';
-  renderInbox(); renderKanban();
+  renderInbox(); renderKanban(); renderTaskStats();
 }
 function sortInboxItem(id){
-  const t = state.tasks.find(x=>x.id===id); t.status='todo'; renderInbox(); renderTaskSections(); renderKanban();
+  const t = state.tasks.find(x=>x.id===id); t.status='todo'; renderInbox(); renderTaskSections(); renderKanban(); renderTaskStats();
 }
 function openAddTaskModal(){
   openEditModal('Add A Task', [
@@ -1512,7 +1563,7 @@ function openAddTaskModal(){
       priority:v.priority, category:v.category.trim()||'General', business:v.business,
       est:v.est.trim()||'—', status:statusMap[v.status]||'todo', notes:v.desc.trim(),
     });
-    renderTaskSections(); renderKanban(); renderInbox(); renderHome();
+    renderTaskSections(); renderKanban(); renderInbox(); renderHome(); renderTaskStats();
   });
 }
 
@@ -1551,7 +1602,7 @@ function completeTask(id){
   const turningOn = t.status!=='completed';
   t.status = t.status==='completed' ? 'todo' : 'completed';
   if(turningOn) fireConfetti();
-  renderTaskSections(); renderKanban(); renderHome();
+  renderTaskSections(); renderKanban(); renderHome(); renderTaskStats();
 }
 function editTask(id){
   const t = state.tasks.find(x=>x.id===id); if(!t) return;
@@ -1565,12 +1616,12 @@ function editTask(id){
     t.priority = v.priority;
     t.due = v.due||null;
     t.notes = v.notes.trim();
-    renderTaskSections(); renderKanban(); renderInbox(); renderHome();
+    renderTaskSections(); renderKanban(); renderInbox(); renderHome(); renderTaskStats();
   });
 }
 function removeTask(id){
   state.tasks = state.tasks.filter(x=>x.id!==id);
-  renderTaskSections(); renderKanban(); renderInbox(); renderHome();
+  renderTaskSections(); renderKanban(); renderInbox(); renderHome(); renderTaskStats();
 }
 
 function renderKanban(){
@@ -1599,7 +1650,7 @@ function renderKanban(){
 }
 function moveTask(id,newStatus){
   const t = state.tasks.find(x=>x.id===id); t.status = newStatus;
-  renderKanban(); renderTaskSections(); renderInbox(); renderHome();
+  renderKanban(); renderTaskSections(); renderInbox(); renderHome(); renderTaskStats();
 }
 function toggleChore(id){
   const c = state.chores.find(x=>x.id===id); if(!c) return;
@@ -3600,6 +3651,463 @@ function removeGroceryItem(id){
 }
 
 /* =========================================================
+   FAITH HUB
+   ========================================================= */
+const faithTabs = [
+  {key:'prayerJournal', label:'Prayer Journal'},
+  {key:'prayerRequests', label:'Prayer Requests'},
+  {key:'scripture', label:'Daily Scripture'},
+  {key:'dedication', label:'Morning & Evening'},
+  {key:'bibleStudy', label:'Bible Study'},
+  {key:'readingPlan', label:'Reading Plan'},
+];
+let activeFaithTab = 'prayerJournal';
+
+function renderFaith(){
+  document.getElementById('hub-faith').innerHTML = `
+    <div class="hub-header">
+      <span class="eyebrow">Faith</span>
+      <h1>Spirituality &amp; Walk With God</h1>
+      <p>Prayer, scripture, and reflection — a quiet space in the middle of everything else.</p>
+    </div>
+    <div class="subtabs" id="faithSubtabs"></div>
+    <div id="faithPanels"></div>
+  `;
+  document.getElementById('faithSubtabs').innerHTML = faithTabs.map(t=>
+    `<div class="subtab ${t.key===activeFaithTab?'active':''}" data-ft="${t.key}">${t.label}</div>`
+  ).join('');
+  document.querySelectorAll('#faithSubtabs .subtab').forEach(el=>{
+    el.addEventListener('click',()=>{ activeFaithTab = el.dataset.ft; renderFaith(); });
+  });
+  document.getElementById('faithPanels').innerHTML = faithPanelHTML(activeFaithTab);
+  wireFaithPanel(activeFaithTab);
+}
+
+function todaysVerse(){
+  const start = new Date(new Date().getFullYear(),0,0);
+  const diff = new Date() - start;
+  const dayOfYear = Math.floor(diff/86400000);
+  return state.faithVerses[dayOfYear % state.faithVerses.length];
+}
+
+function faithPanelHTML(tab){
+  if(tab==='prayerJournal') return `
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-head"><h3>Add Prayer Entry</h3><span class="eyebrow">Today &amp; Any Date</span></div>
+      <div class="grid grid-2">
+        <div class="field"><label>Date</label><input id="newPrayerJournalDate" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+      </div>
+      <div class="field"><label>Entry</label><textarea id="newPrayerJournalEntry" placeholder="What's on your heart today?"></textarea></div>
+      <button class="btn btn-gold btn-sm" onclick="addPrayerJournalEntry()">Save Entry</button>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Prayer Journal</h3><span class="eyebrow">${state.faithPrayerJournal.length} entries</span></div>
+      <div class="row-list">
+        ${state.faithPrayerJournal.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=>`
+          <div class="list-row" style="align-items:flex-start;">
+            <span class="dot" style="background:var(--gold);margin-top:6px;"></span>
+            <div class="rtitle">
+              <div class="t">${fmtDate(p.date)}</div>
+              <div class="empty-note" style="margin-top:4px;white-space:pre-wrap;">${esc(p.entry)}</div>
+            </div>
+            <div style="display:flex;gap:4px;">
+              ${miniIcon(iconPencil(), `editPrayerJournalEntry('${p.id}')`, 'Edit')}
+              ${miniIcon(iconX(), `removePrayerJournalEntry('${p.id}')`, 'Remove')}
+            </div>
+          </div>`).join('') || '<div class="empty-note">No entries yet — write your first prayer above.</div>'}
+      </div>
+    </div>
+  `;
+
+  if(tab==='prayerRequests') return `
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-head"><h3>Add Prayer Request</h3></div>
+      <div class="grid grid-2">
+        <div class="field" style="grid-column:span 2;"><label>Request</label><input id="newPrayerRequestText" type="text" placeholder="What are you praying for?"></div>
+        <div class="field"><label>Category</label>
+          <select id="newPrayerRequestCategory">${state.faithPrayerCategories.map(c=>`<option>${c}</option>`).join('')}</select>
+        </div>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="addPrayerRequest()">Add Request</button>
+    </div>
+    <div class="subtabs" id="prayerReqFilterTabs" style="margin-bottom:16px;"></div>
+    <div id="prayerReqGrid"></div>
+  `;
+
+  if(tab==='scripture'){
+    const v = todaysVerse();
+    return `
+    <div class="affirmation-banner">
+      <div>
+        <span class="eyebrow">Today's Scripture</span>
+        <div class="quote" style="margin-top:8px;">"${esc(v.text)}"</div>
+        <div style="margin-top:8px;color:var(--gold-soft);font-size:12.5px;">— ${esc(v.ref)}</div>
+      </div>
+      <button class="btn btn-outline" style="border-color:rgba(198,166,100,0.4);color:#F6EFDD;" onclick="saveFavoriteVerse()">♡ Save Verse</button>
+    </div>
+
+    <div class="grid grid-2" style="align-items:start;">
+      <div class="card">
+        <div class="card-head"><h3>My Reflection</h3><span class="eyebrow">On Today's Verse</span></div>
+        <textarea id="newFaithReflection" placeholder="What does this verse mean to you today?" style="width:100%;min-height:90px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13.5px;background:var(--ivory);outline:none;"></textarea>
+        <button class="btn btn-gold btn-sm" style="margin-top:10px;" onclick="saveFaithReflection()">Save Reflection</button>
+        <div class="divider"></div>
+        <div class="card-head"><h3>Past Reflections</h3><span class="eyebrow">${state.faithReflections.length}</span></div>
+        <div class="row-list">
+          ${state.faithReflections.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).map(r=>`
+            <div class="list-row" style="align-items:flex-start;">
+              <span class="dot" style="background:var(--sky);margin-top:6px;"></span>
+              <div class="rtitle">
+                <div class="t serif-italic">"${esc(r.verseText)}" — ${esc(r.verseRef)}</div>
+                <div class="s">${fmtDate(r.date)}</div>
+                <div class="empty-note" style="margin-top:4px;white-space:pre-wrap;">${esc(r.text)}</div>
+              </div>
+              ${miniIcon(iconX(), `removeFaithReflection('${r.id}')`, 'Remove')}
+            </div>`).join('') || '<div class="empty-note">No reflections saved yet.</div>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Memory Verse Of The Week</h3>${miniIcon(iconPencil(), 'editMemoryVerse()', 'Edit')}</div>
+        <div class="t serif-italic" style="font-size:15px;margin-bottom:4px;">"${esc(state.faithMemoryVerse.text)}"</div>
+        <div class="empty-note" style="margin-bottom:12px;">— ${esc(state.faithMemoryVerse.ref)}</div>
+        <div class="pbar-row"><span>Memorization Progress</span><b>${state.faithMemoryVerse.progress}%</b></div>
+        <div class="pbar-track" style="margin-bottom:14px;"><div class="pbar-fill" style="width:${state.faithMemoryVerse.progress}%"></div></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline btn-sm" onclick="adjustMemoryVerseProgress(-10)">-10%</button>
+          <button class="btn btn-outline btn-sm" onclick="adjustMemoryVerseProgress(10)">+10%</button>
+        </div>
+        <div class="divider"></div>
+        <div class="card-head"><h3>Saved Favorite Verses</h3><span class="eyebrow">${state.faithSavedVerses.length}</span></div>
+        <div class="row-list">
+          ${state.faithSavedVerses.map(sv=>`
+            <div class="list-row"><span class="dot" style="background:var(--gold)"></span>
+              <div class="rtitle"><div class="t">${esc(sv.text)}</div><div class="s">${esc(sv.ref)}</div></div>
+              ${miniIcon(iconX(), `removeSavedVerse('${sv.id}')`, 'Remove')}
+            </div>`).join('') || '<div class="empty-note">No saved verses yet.</div>'}
+        </div>
+      </div>
+    </div>
+  `;
+  }
+
+  if(tab==='dedication') return `
+    <div class="grid grid-2" style="align-items:start;">
+      <div class="card">
+        <div class="card-head"><h3>Morning Dedication</h3><span class="eyebrow">Start Intentionally</span></div>
+        <textarea id="newMorningDedication" placeholder="Lord, today I dedicate… What do you want to bring into this day?" style="width:100%;min-height:90px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13.5px;background:var(--ivory);outline:none;"></textarea>
+        <button class="btn btn-gold btn-sm" style="margin-top:10px;" onclick="saveMorningDedication()">Save</button>
+        <div class="row-list" style="margin-top:14px;">
+          ${state.faithMorningEntries.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).map(e=>`
+            <div class="list-row" style="align-items:flex-start;">
+              <span class="dot" style="background:var(--gold);margin-top:6px;"></span>
+              <div class="rtitle"><div class="t">${fmtDate(e.date)}</div><div class="empty-note" style="margin-top:4px;white-space:pre-wrap;">${esc(e.text)}</div></div>
+              ${miniIcon(iconX(), `removeMorningEntry('${e.id}')`, 'Remove')}
+            </div>`).join('') || '<div class="empty-note">No entries yet.</div>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Evening Reflection</h3><span class="eyebrow">End Intentionally</span></div>
+        <textarea id="newEveningReflection" placeholder="Where did I see God today? What am I bringing to Him tonight?" style="width:100%;min-height:90px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13.5px;background:var(--ivory);outline:none;"></textarea>
+        <button class="btn btn-gold btn-sm" style="margin-top:10px;" onclick="saveEveningReflection()">Save</button>
+        <div class="row-list" style="margin-top:14px;">
+          ${state.faithEveningEntries.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).map(e=>`
+            <div class="list-row" style="align-items:flex-start;">
+              <span class="dot" style="background:var(--sky);margin-top:6px;"></span>
+              <div class="rtitle"><div class="t">${fmtDate(e.date)}</div><div class="empty-note" style="margin-top:4px;white-space:pre-wrap;">${esc(e.text)}</div></div>
+              ${miniIcon(iconX(), `removeEveningEntry('${e.id}')`, 'Remove')}
+            </div>`).join('') || '<div class="empty-note">No entries yet.</div>'}
+        </div>
+      </div>
+    </div>
+  `;
+
+  if(tab==='bibleStudy') return `
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-head"><h3>Bible Studies</h3><span class="eyebrow">${state.faithBibleStudies.filter(s=>s.complete).length}/${state.faithBibleStudies.length} complete</span></div>
+      <div class="row-list">
+        ${state.faithBibleStudies.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).map(s=>`
+          <div class="list-row" style="align-items:flex-start;">
+            <span class="chk ${s.complete?'done':''}" onclick="toggleBibleStudyComplete('${s.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg></span>
+            <div class="rtitle">
+              <div class="t ${s.complete?'text-done':''}">${esc(s.title)}</div>
+              <div class="s">${esc(s.book)} ${esc(s.chapters)} · ${fmtDate(s.date)}</div>
+              ${s.notes?`<div class="empty-note" style="margin-top:4px;"><b style="color:var(--ink);">Notes:</b> ${esc(s.notes)}</div>`:''}
+              ${s.keyLessons?`<div class="empty-note"><b style="color:var(--ink);">Key Lessons:</b> ${esc(s.keyLessons)}</div>`:''}
+              ${s.questions?`<div class="empty-note"><b style="color:var(--ink);">Questions:</b> ${esc(s.questions)}</div>`:''}
+              ${s.application?`<div class="empty-note"><b style="color:var(--ink);">Application:</b> ${esc(s.application)}</div>`:''}
+            </div>
+            <div style="display:flex;gap:4px;">
+              ${miniIcon(iconPencil(), `editBibleStudy('${s.id}')`, 'Edit')}
+              ${miniIcon(iconX(), `removeBibleStudy('${s.id}')`, 'Remove')}
+            </div>
+          </div>`).join('') || '<div class="empty-note">No studies logged yet.</div>'}
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="openAddBibleStudyModal()">+ Add Study</button>
+    </div>
+  `;
+
+  if(tab==='readingPlan'){
+    const rp = state.faithReadingPlan;
+    const pct = rp.totalChapters ? Math.round(rp.chaptersCompleted/rp.totalChapters*100) : 0;
+    return `
+    <div class="card">
+      <div class="card-head"><h3>${esc(rp.name)}</h3>${miniIcon(iconPencil(), 'editReadingPlan()', 'Edit')}</div>
+      <div class="grid grid-4" style="margin-bottom:14px;">
+        <div class="stat"><span class="eyebrow">Current Book</span><div class="num" style="font-size:20px;">${esc(rp.currentBook)}</div></div>
+        <div class="stat"><span class="eyebrow">Chapters Completed</span><div class="num" style="font-size:20px;">${rp.chaptersCompleted}</div></div>
+        <div class="stat"><span class="eyebrow">Day Streak</span><div class="num" style="font-size:20px;">${rp.streak}</div></div>
+        <div class="stat"><span class="eyebrow">Complete</span><div class="num" style="font-size:20px;">${pct}%</div></div>
+      </div>
+      <div class="pbar-row"><span>Overall Progress</span><b>${rp.chaptersCompleted} / ${rp.totalChapters} chapters</b></div>
+      <div class="pbar-track" style="margin-bottom:14px;"><div class="pbar-fill" style="width:${pct}%"></div></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-gold btn-sm" onclick="logReadingPlanProgress()">Log Today's Reading (+1 chapter, +1 day streak)</button>
+      </div>
+    </div>
+  `;
+  }
+}
+
+function wireFaithPanel(tab){
+  if(tab==='prayerRequests'){
+    renderPrayerReqFilterTabs();
+    renderPrayerReqGrid();
+  }
+}
+let activePrayerReqFilter = 'All';
+function renderPrayerReqFilterTabs(){
+  const cats = ['All', ...state.faithPrayerCategories];
+  const box = document.getElementById('prayerReqFilterTabs');
+  if(!box) return;
+  box.innerHTML = cats.map(c=>`<div class="subtab ${c===activePrayerReqFilter?'active':''}" data-prf="${c}">${c}</div>`).join('');
+  box.querySelectorAll('.subtab').forEach(el=>{
+    el.addEventListener('click',()=>{
+      activePrayerReqFilter = el.dataset.prf;
+      box.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      renderPrayerReqGrid();
+    });
+  });
+}
+function renderPrayerReqGrid(){
+  const box = document.getElementById('prayerReqGrid');
+  if(!box) return;
+  const list = activePrayerReqFilter==='All' ? state.faithPrayerRequests : state.faithPrayerRequests.filter(p=>p.category===activePrayerReqFilter);
+  box.innerHTML = `<div class="row-list">
+    ${list.slice().sort((a,b)=>new Date(b.dateAdded)-new Date(a.dateAdded)).map(p=>`
+      <div class="list-row" style="align-items:flex-start;">
+        <span class="chk ${p.answered?'done':''}" onclick="togglePrayerAnswered('${p.id}')" title="Mark answered"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6"/></svg></span>
+        <div class="rtitle">
+          <div class="t ${p.answered?'text-done':''}">${esc(p.text)}</div>
+          <div class="s">${esc(p.category)} · Added ${fmtDate(p.dateAdded)}</div>
+          ${p.answered && p.answeredNote ? `<div class="empty-note" style="margin-top:4px;"><b style="color:var(--ink);">Answered:</b> ${esc(p.answeredNote)}${p.answeredDate?' ('+fmtDate(p.answeredDate)+')':''}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:4px;">
+          ${miniIcon(iconPencil(), `editPrayerRequest('${p.id}')`, 'Edit')}
+          ${miniIcon(iconX(), `removePrayerRequest('${p.id}')`, 'Remove')}
+        </div>
+      </div>`).join('') || '<div class="empty-note">Nothing here yet.</div>'}
+  </div>`;
+}
+
+function addPrayerJournalEntry(){
+  const date = document.getElementById('newPrayerJournalDate').value || new Date().toISOString().slice(0,10);
+  const entry = document.getElementById('newPrayerJournalEntry').value.trim();
+  if(!entry) return;
+  state.faithPrayerJournal.push({id:uid('pj'), date, entry});
+  renderFaith();
+}
+function editPrayerJournalEntry(id){
+  const p = state.faithPrayerJournal.find(x=>x.id===id); if(!p) return;
+  openEditModal('Edit Prayer Entry', [
+    {key:'date', label:'Date', type:'date', value:p.date||''},
+    {key:'entry', label:'Entry', type:'textarea', value:p.entry},
+  ], v=>{
+    p.date = v.date||p.date; p.entry = v.entry.trim()||p.entry;
+    renderFaith();
+  });
+}
+function removePrayerJournalEntry(id){
+  state.faithPrayerJournal = state.faithPrayerJournal.filter(x=>x.id!==id);
+  renderFaith();
+}
+
+function addPrayerRequest(){
+  const text = document.getElementById('newPrayerRequestText').value.trim();
+  const category = document.getElementById('newPrayerRequestCategory').value;
+  if(!text) return;
+  state.faithPrayerRequests.push({id:uid('pr'), text, category, dateAdded:new Date().toISOString().slice(0,10), answered:false, answeredNote:'', answeredDate:null});
+  document.getElementById('newPrayerRequestText').value='';
+  renderPrayerReqGrid();
+}
+function togglePrayerAnswered(id){
+  const p = state.faithPrayerRequests.find(x=>x.id===id); if(!p) return;
+  if(p.answered){
+    p.answered = false; p.answeredNote=''; p.answeredDate=null;
+    renderPrayerReqGrid();
+  } else {
+    openEditModal('How Did God Answer This?', [
+      {key:'answeredNote', label:'How was it answered?', type:'textarea', value:''},
+    ], v=>{
+      p.answered = true;
+      p.answeredNote = v.answeredNote.trim();
+      p.answeredDate = new Date().toISOString().slice(0,10);
+      fireConfetti();
+      renderPrayerReqGrid();
+    });
+  }
+}
+function editPrayerRequest(id){
+  const p = state.faithPrayerRequests.find(x=>x.id===id); if(!p) return;
+  openEditModal('Edit Prayer Request', [
+    {key:'text', label:'Request', value:p.text},
+    {key:'category', label:'Category', type:'select', value:p.category, options:state.faithPrayerCategories},
+    {key:'answeredNote', label:'How Was It Answered (optional)', type:'textarea', value:p.answeredNote},
+  ], v=>{
+    p.text = v.text.trim()||p.text; p.category = v.category; p.answeredNote = v.answeredNote.trim();
+    renderPrayerReqGrid();
+  });
+}
+function removePrayerRequest(id){
+  state.faithPrayerRequests = state.faithPrayerRequests.filter(x=>x.id!==id);
+  renderPrayerReqGrid();
+}
+
+function saveFavoriteVerse(){
+  const v = todaysVerse();
+  if(state.faithSavedVerses.some(sv=>sv.ref===v.ref)) return;
+  state.faithSavedVerses.push({id:uid('sv'), ref:v.ref, text:v.text});
+  renderFaith();
+}
+function removeSavedVerse(id){
+  state.faithSavedVerses = state.faithSavedVerses.filter(x=>x.id!==id);
+  renderFaith();
+}
+function saveFaithReflection(){
+  const text = document.getElementById('newFaithReflection').value.trim();
+  if(!text) return;
+  const v = todaysVerse();
+  state.faithReflections.push({id:uid('fr'), date:new Date().toISOString().slice(0,10), verseRef:v.ref, verseText:v.text, text});
+  renderFaith();
+}
+function removeFaithReflection(id){
+  state.faithReflections = state.faithReflections.filter(x=>x.id!==id);
+  renderFaith();
+}
+function editMemoryVerse(){
+  const mv = state.faithMemoryVerse;
+  openEditModal('Edit Memory Verse', [
+    {key:'ref', label:'Reference', value:mv.ref},
+    {key:'text', label:'Verse Text', type:'textarea', value:mv.text},
+    {key:'progress', label:'Memorization Progress %', type:'number', value:mv.progress},
+  ], v=>{
+    mv.ref = v.ref.trim()||mv.ref; mv.text = v.text.trim()||mv.text;
+    mv.progress = Math.max(0,Math.min(100,intOr(v.progress, mv.progress)));
+    renderFaith();
+  });
+}
+function adjustMemoryVerseProgress(delta){
+  const mv = state.faithMemoryVerse;
+  mv.progress = Math.max(0,Math.min(100, mv.progress+delta));
+  renderFaith();
+}
+
+function saveMorningDedication(){
+  const text = document.getElementById('newMorningDedication').value.trim();
+  if(!text) return;
+  state.faithMorningEntries.push({id:uid('me'), date:new Date().toISOString().slice(0,10), text});
+  renderFaith();
+}
+function removeMorningEntry(id){
+  state.faithMorningEntries = state.faithMorningEntries.filter(x=>x.id!==id);
+  renderFaith();
+}
+function saveEveningReflection(){
+  const text = document.getElementById('newEveningReflection').value.trim();
+  if(!text) return;
+  state.faithEveningEntries.push({id:uid('ee'), date:new Date().toISOString().slice(0,10), text});
+  renderFaith();
+}
+function removeEveningEntry(id){
+  state.faithEveningEntries = state.faithEveningEntries.filter(x=>x.id!==id);
+  renderFaith();
+}
+
+function openAddBibleStudyModal(){
+  openEditModal('Add Bible Study', [
+    {key:'title', label:'Study Title', value:''},
+    {key:'date', label:'Date', type:'date', value:new Date().toISOString().slice(0,10)},
+    {key:'book', label:'Book Of The Bible', value:''},
+    {key:'chapters', label:'Chapters Read', value:''},
+    {key:'notes', label:'Notes', type:'textarea', value:''},
+    {key:'keyLessons', label:'Key Lessons Learned', type:'textarea', value:''},
+    {key:'questions', label:'Questions I Still Have', type:'textarea', value:''},
+    {key:'application', label:'Application — How can I apply this today?', type:'textarea', value:''},
+  ], v=>{
+    if(!v.title.trim()) return;
+    state.faithBibleStudies.push({
+      id:uid('bs'), title:v.title.trim(), date:v.date||new Date().toISOString().slice(0,10), book:v.book.trim(),
+      chapters:v.chapters.trim(), notes:v.notes.trim(), keyLessons:v.keyLessons.trim(),
+      questions:v.questions.trim(), application:v.application.trim(), complete:false,
+    });
+    renderFaith();
+  });
+}
+function editBibleStudy(id){
+  const s = state.faithBibleStudies.find(x=>x.id===id); if(!s) return;
+  openEditModal('Edit Bible Study', [
+    {key:'title', label:'Study Title', value:s.title},
+    {key:'date', label:'Date', type:'date', value:s.date||''},
+    {key:'book', label:'Book Of The Bible', value:s.book},
+    {key:'chapters', label:'Chapters Read', value:s.chapters},
+    {key:'notes', label:'Notes', type:'textarea', value:s.notes},
+    {key:'keyLessons', label:'Key Lessons Learned', type:'textarea', value:s.keyLessons},
+    {key:'questions', label:'Questions I Still Have', type:'textarea', value:s.questions},
+    {key:'application', label:'Application — How can I apply this today?', type:'textarea', value:s.application},
+  ], v=>{
+    s.title = v.title.trim()||s.title; s.date = v.date||s.date; s.book = v.book.trim();
+    s.chapters = v.chapters.trim(); s.notes = v.notes.trim(); s.keyLessons = v.keyLessons.trim();
+    s.questions = v.questions.trim(); s.application = v.application.trim();
+    renderFaith();
+  });
+}
+function removeBibleStudy(id){
+  state.faithBibleStudies = state.faithBibleStudies.filter(x=>x.id!==id);
+  renderFaith();
+}
+function toggleBibleStudyComplete(id){
+  const s = state.faithBibleStudies.find(x=>x.id===id); if(!s) return;
+  const turningOn = !s.complete;
+  s.complete = !s.complete;
+  if(turningOn) fireConfetti();
+  renderFaith();
+}
+
+function editReadingPlan(){
+  const rp = state.faithReadingPlan;
+  openEditModal('Edit Reading Plan', [
+    {key:'name', label:'Plan Name', value:rp.name},
+    {key:'currentBook', label:'Current Book', value:rp.currentBook},
+    {key:'chaptersCompleted', label:'Chapters Completed', type:'number', value:rp.chaptersCompleted},
+    {key:'totalChapters', label:'Total Chapters In Plan', type:'number', value:rp.totalChapters},
+    {key:'streak', label:'Day Streak', type:'number', value:rp.streak},
+  ], v=>{
+    rp.name = v.name.trim()||rp.name; rp.currentBook = v.currentBook.trim()||rp.currentBook;
+    rp.chaptersCompleted = intOr(v.chaptersCompleted, rp.chaptersCompleted);
+    rp.totalChapters = intOr(v.totalChapters, rp.totalChapters);
+    rp.streak = intOr(v.streak, rp.streak);
+    renderFaith();
+  });
+}
+function logReadingPlanProgress(){
+  const rp = state.faithReadingPlan;
+  rp.chaptersCompleted = Math.min(rp.totalChapters, rp.chaptersCompleted+1);
+  rp.streak += 1;
+  fireConfetti();
+  renderFaith();
+}
+
+/* =========================================================
    PLANNER HUB
    ========================================================= */
 let plannerView = 'weekly';
@@ -4399,7 +4907,7 @@ function promoteIdea(id,type){
 const allHubs = [
   {key:'home', label:'Home'}, {key:'tasks', label:'Tasks'}, {key:'school', label:'School'},
   {key:'travel', label:'Travel Studio'}, {key:'brand', label:'Brand Studio'}, {key:'finance', label:'Finance'},
-  {key:'glowup', label:'Glow Up'}, {key:'planner', label:'Planner'}, {key:'goals', label:'Goals'}, {key:'ideas', label:'Idea Vault'},
+  {key:'glowup', label:'Glow Up'}, {key:'faith', label:'Faith'}, {key:'planner', label:'Planner'}, {key:'goals', label:'Goals'}, {key:'ideas', label:'Idea Vault'},
 ];
 const homeWidgetLabels = [
   {key:'affirmation', label:'Daily Affirmation Banner'},
@@ -4510,6 +5018,7 @@ function iconTravel(){return `<svg viewBox="0 0 24 24" fill="none" stroke="curre
 function iconBrand(){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/></svg>`;}
 function iconFinance(){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18M7 15h3"/></svg>`;}
 function iconGlow(){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.6-9.5-9C.7 8.4 2.5 4.5 6.2 4.1c2-.2 3.6.8 5.8 3 2.2-2.2 3.8-3.2 5.8-3 3.7.4 5.5 4.3 3.7 7.9C19 16.4 12 21 12 21Z"/></svg>`;}
+function iconFaith(){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M7 7l5-4 5 4M5 12h14M6 21h12l-1.5-6h-9L6 21Z"/></svg>`;}
 
 /* ---------- Render everything (called after sign-in / data load, not on page load) ---------- */
 function renderAllHubs(){
@@ -4520,6 +5029,7 @@ function renderAllHubs(){
   renderBrand();
   renderFinance();
   renderGlowUp();
+  renderFaith();
   renderPlanner();
   renderGoals();
   renderIdeas();
