@@ -1390,6 +1390,31 @@ function addPriority(){
   input.value='';
   renderPriorities();
 }
+function resetWeekdayAgendas(){
+  const template = [
+    {time:'6:00 AM', item:'Wake Up Routine 🌞'},
+    {time:'6:10 AM - 6:45 AM', item:'Time With God + Plan My Day 🔏'},
+    {time:'6:45 AM - 7:30 AM', item:'Morning Walk 🚶‍♀️'},
+    {time:'7:30 AM - 7:45 AM', item:'Shower + Skincare 🫧'},
+    {time:'7:45 AM - 8:20 AM', item:'Everest Morning Routine + Breakfast 🍳'},
+    {time:'8:20 AM - 8:30 AM', item:'Have Breakfast at My Desk + Log on for Work ⌨️'},
+    {time:'8:30 AM - 4:00 PM', item:'Work 👩‍💻'},
+    {time:'4:00 PM - 4:30 PM', item:'Everest Time! 🧒'},
+    {time:'4:30 PM - 5:40 PM', item:'Workout + Stretch 🤸‍♀️'},
+    {time:'5:40 PM - 6:00 PM', item:'Shower + Skincare 🫧'},
+    {time:'6:00 PM - 6:45 PM', item:'Dinner'},
+    {time:'7:00 PM - 7:30 PM', item:'Everest Bath Time'},
+    {time:'7:30 PM - 8:30 PM', item:'Focus Block'},
+    {time:'8:30 PM - 9:30 PM', item:'Focus Block'},
+    {time:'9:30 PM - 10:30 PM', item:'Wind Down + Rest'},
+  ];
+  ['Tuesday','Wednesday','Thursday','Friday'].forEach(day=>{
+    const prefix = day.slice(0,2).toLowerCase();
+    state.weeklyAgenda[day] = template.map((t,i)=>({id:uid('ag_'+prefix), time:t.time, item:t.item}));
+  });
+  renderHome();
+  console.log('Tuesday–Friday agendas updated. This will auto-save within a few seconds.');
+}
 function cycleAgendaDay(dir){
   const idx = weekdayOrder.indexOf(activeAgendaDay);
   activeAgendaDay = weekdayOrder[(idx+dir+7)%7];
