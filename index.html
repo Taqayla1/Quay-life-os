@@ -1209,9 +1209,9 @@ function renderHome(){
   const completedCount = state.tasks.filter(t=>t.status==='completed').length;
   const weeklyPct = Math.round((completedCount/(state.tasks.length||1))*100);
   const habitPct = Math.round(state.habits.reduce((s,h)=>s+h.days.filter(Boolean).length,0) / (state.habits.length*7) * 100);
-  const scheduledToday = itemsForDate(new Date().toISOString().slice(0,10));
+  const scheduledToday = calendarEventsForDate(new Date().toISOString().slice(0,10));
   const scheduledThisWeek = [];
-  for(let i=1;i<=7;i++){ itemsForDate(daysFromNow(i)).forEach(it=>scheduledThisWeek.push(it)); }
+  for(let i=1;i<=7;i++){ calendarEventsForDate(daysFromNow(i)).forEach(it=>scheduledThisWeek.push(it)); }
   scheduledThisWeek.sort((a,b)=> new Date(a.date) - new Date(b.date));
 
   const goalsSnapshot = [
@@ -1293,7 +1293,7 @@ function renderHome(){
     <div class="grid grid-2" style="margin-top:18px;align-items:start;">
       ${w.scheduledToday ? `
       <div class="card">
-        <div class="card-head"><h3>Scheduled For Today</h3><span class="eyebrow">${scheduledToday.length} item${scheduledToday.length===1?'':'s'}</span></div>
+        <div class="card-head"><h3>Events Scheduled Today</h3><span class="eyebrow">${scheduledToday.length} event${scheduledToday.length===1?'':'s'}</span></div>
         <div class="row-list">
           ${scheduledToday.length ? scheduledToday.map(it=>`
             <div class="list-row">
@@ -1305,7 +1305,7 @@ function renderHome(){
       </div>` : ''}
       ${w.scheduledWeek ? `
       <div class="card">
-        <div class="card-head"><h3>Scheduled This Week</h3><span class="eyebrow">Next 7 Days</span></div>
+        <div class="card-head"><h3>Events Scheduled This Week</h3><span class="eyebrow">Next 7 Days</span></div>
         <div class="row-list">
           ${scheduledThisWeek.length ? scheduledThisWeek.slice(0,8).map(it=>`
             <div class="list-row">
@@ -4219,6 +4219,10 @@ function itemsForDate(iso){
   state.beautyAppointments.forEach(a=>{ if(a.date===iso) out.push({label:(a.time?a.time+' — ':'')+a.name+(a.provider?' at '+a.provider:''), title:a.name+(a.provider?' at '+a.provider:''), type:'Beauty Appointment', color:'var(--gold)', date:iso, time:a.time||null, location:a.location||''}); });
   return out;
 }
+/* Calendar events only — excludes Tasks and School assignments, which already have their own Home widgets */
+function calendarEventsForDate(iso){
+  return itemsForDate(iso).filter(it => it.type!=='Task' && it.type!=='School');
+}
 function getWeekDays(){
   const now = new Date(); now.setHours(0,0,0,0);
   const dow = (now.getDay()+6)%7; // Mon=0
@@ -5014,8 +5018,8 @@ const homeWidgetLabels = [
   {key:'overdue', label:'Overdue — Needs Attention'},
   {key:'priorities', label:"Today's Top 3 Priorities"},
   {key:'agenda', label:'Daily Agenda'},
-  {key:'scheduledToday', label:'Scheduled For Today (from Planner)'},
-  {key:'scheduledWeek', label:'Scheduled This Week (from Planner)'},
+  {key:'scheduledToday', label:'Events Scheduled Today (from Planner)'},
+  {key:'scheduledWeek', label:'Events Scheduled This Week (from Planner)'},
   {key:'deadlines', label:'Upcoming Deadlines & Appointments'},
   {key:'goalSnapshot', label:'Goal Progress Snapshot'},
   {key:'chores', label:'Chores This Week'},
