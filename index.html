@@ -528,6 +528,8 @@ const state = {
       quickAccess: true,
       reflection: true,
       chores: true,
+      scheduledToday: true,
+      scheduledWeek: true,
     },
   },
   priorities: [
@@ -1207,6 +1209,10 @@ function renderHome(){
   const completedCount = state.tasks.filter(t=>t.status==='completed').length;
   const weeklyPct = Math.round((completedCount/(state.tasks.length||1))*100);
   const habitPct = Math.round(state.habits.reduce((s,h)=>s+h.days.filter(Boolean).length,0) / (state.habits.length*7) * 100);
+  const scheduledToday = itemsForDate(new Date().toISOString().slice(0,10));
+  const scheduledThisWeek = [];
+  for(let i=1;i<=7;i++){ itemsForDate(daysFromNow(i)).forEach(it=>scheduledThisWeek.push(it)); }
+  scheduledThisWeek.sort((a,b)=> new Date(a.date) - new Date(b.date));
 
   const goalsSnapshot = [
     {label:'Degree Progress', pct:Math.round(state.degree.completedCredits/state.degree.totalCredits*100)},
@@ -1279,6 +1285,34 @@ function renderHome(){
           <input id="newAgendaTime" type="text" placeholder="Time (e.g. 3:00 PM)" style="max-width:130px;">
           <input id="newAgendaItem" type="text" placeholder="+ add to ${activeAgendaDay}'s agenda">
           <button class="btn btn-gold btn-sm" onclick="addAgendaItem()">Add</button>
+        </div>
+      </div>` : ''}
+    </div>` : ''}
+
+    ${(w.scheduledToday || w.scheduledWeek) ? `
+    <div class="grid grid-2" style="margin-top:18px;align-items:start;">
+      ${w.scheduledToday ? `
+      <div class="card">
+        <div class="card-head"><h3>Scheduled For Today</h3><span class="eyebrow">${scheduledToday.length} item${scheduledToday.length===1?'':'s'}</span></div>
+        <div class="row-list">
+          ${scheduledToday.length ? scheduledToday.map(it=>`
+            <div class="list-row">
+              <span class="dot" style="background:${it.color}"></span>
+              <div class="rtitle"><div class="t">${esc(it.label)}</div><div class="s">${esc(it.type)}</div></div>
+              ${calBtn(it)}
+            </div>`).join('') : '<div class="empty-note">Nothing on the calendar for today.</div>'}
+        </div>
+      </div>` : ''}
+      ${w.scheduledWeek ? `
+      <div class="card">
+        <div class="card-head"><h3>Scheduled This Week</h3><span class="eyebrow">Next 7 Days</span></div>
+        <div class="row-list">
+          ${scheduledThisWeek.length ? scheduledThisWeek.slice(0,8).map(it=>`
+            <div class="list-row">
+              <span class="dot" style="background:${it.color}"></span>
+              <div class="rtitle"><div class="t">${esc(it.label)}</div><div class="s">${esc(it.type)}</div></div>
+              <div class="rmeta">${fmtDate(it.date)}</div>
+            </div>`).join('') : '<div class="empty-note">Nothing else on the calendar this week.</div>'}
         </div>
       </div>` : ''}
     </div>` : ''}
@@ -1918,10 +1952,10 @@ function editAssignment(id){
     {key:'status', label:'Status', type:'select', value:a.status, options:['Not Started','In Progress','Submitted','Overdue']},
   ], v=>{
     a.name = v.name.trim()||a.name; a.due = v.due||a.due; a.status = v.status; a.courseId = v.courseId||null;
-    renderSchool();
+    renderSchool(); renderHome();
   });
 }
-function removeAssignment(id){ state.assignments = state.assignments.filter(x=>x.id!==id); renderSchool(); }
+function removeAssignment(id){ state.assignments = state.assignments.filter(x=>x.id!==id); renderSchool(); renderHome(); }
 function editExam(id){
   const e = state.exams.find(x=>x.id===id); if(!e) return;
   openEditModal('Edit Exam', [
@@ -1929,10 +1963,10 @@ function editExam(id){
     {key:'date', label:'Exam Date', type:'date', value:e.date||''},
   ], v=>{
     e.name = v.name.trim()||e.name; e.date = v.date||e.date;
-    renderSchool();
+    renderSchool(); renderHome();
   });
 }
-function removeExam(id){ state.exams = state.exams.filter(x=>x.id!==id); renderSchool(); }
+function removeExam(id){ state.exams = state.exams.filter(x=>x.id!==id); renderSchool(); renderHome(); }
 function editStudyPlannerItem(id){
   const sp = state.studyPlanner.find(x=>x.id===id); if(!sp) return;
   openEditModal('Edit Study Block', [{key:'text', label:'Study Block', value:sp.text}], v=>{
@@ -1994,7 +2028,7 @@ function openAddAssignmentModal(){
   ], v=>{
     if(!v.name.trim()) return;
     state.assignments.push({id:uid('a'), name:v.name.trim(), courseId:v.courseId||null, due:v.due||null, status:v.status, est:v.est.trim()||'—', notes:v.notes.trim(), readings:[]});
-    renderSchool();
+    renderSchool(); renderHome();
   });
 }
 function openAddExamModal(){
@@ -2005,7 +2039,7 @@ function openAddExamModal(){
   ], v=>{
     if(!v.name.trim()) return;
     state.exams.push({id:uid('e'), name:v.name.trim(), date:v.date||null, status:v.status});
-    renderSchool();
+    renderSchool(); renderHome();
   });
 }
 
@@ -4468,6 +4502,7 @@ function addPlannerBlock(iso, text){
   if(!text) return;
   state.plannerBlocks.push({id:uid('pb'), date:iso, text});
   renderPlannerCalendar();
+  renderHome();
 }
 function savePlannerBlock(iso, text){
   text = (text||'').trim();
@@ -4477,6 +4512,7 @@ function savePlannerBlock(iso, text){
     if(b){ b.text = text; }
     editingBlockId = null;
     renderPlannerCalendar();
+    renderHome();
   } else {
     addPlannerBlock(iso, text);
   }
@@ -4495,6 +4531,7 @@ function removePlannerBlock(id){
   state.plannerBlocks = state.plannerBlocks.filter(x=>x.id!==id);
   if(editingBlockId===id) editingBlockId=null;
   renderPlannerCalendar();
+  renderHome();
   if(b && document.getElementById('dayDetailBox') && document.getElementById('dayDetailBox').style.display!=='none'){
     showDayDetail(b.date);
   }
@@ -4554,7 +4591,7 @@ function openAddDoctorAppointmentModal(){
   ], v=>{
     if(!v.name.trim() || !v.date) return;
     state.doctorAppointments.push({id:uid('da'), name:v.name.trim(), doctorName:v.doctorName.trim(), date:v.date, time:v.time.trim(), location:v.location.trim(), notes:v.notes.trim()});
-    renderPlanner();
+    renderPlanner(); renderHome();
   });
 }
 function editDoctorAppointment(id){
@@ -4569,12 +4606,12 @@ function editDoctorAppointment(id){
   ], v=>{
     d.name = v.name.trim()||d.name; d.doctorName = v.doctorName.trim(); d.date = v.date||d.date;
     d.time = v.time.trim(); d.location = v.location.trim(); d.notes = v.notes.trim();
-    renderPlanner();
+    renderPlanner(); renderHome();
   });
 }
 function removeDoctorAppointment(id){
   state.doctorAppointments = state.doctorAppointments.filter(x=>x.id!==id);
-  renderPlanner();
+  renderPlanner(); renderHome();
 }
 function openAddBeautyAppointmentModal(){
   openEditModal('Add Beauty Appointment', [
@@ -4587,7 +4624,7 @@ function openAddBeautyAppointmentModal(){
   ], v=>{
     if(!v.name.trim() || !v.date) return;
     state.beautyAppointments.push({id:uid('ba'), name:v.name.trim(), provider:v.provider.trim(), date:v.date, time:v.time.trim(), location:v.location.trim(), notes:v.notes.trim()});
-    renderGlowUp(); renderPlanner();
+    renderGlowUp(); renderPlanner(); renderHome();
   });
 }
 function editBeautyAppointment(id){
@@ -4602,12 +4639,12 @@ function editBeautyAppointment(id){
   ], v=>{
     a.name = v.name.trim()||a.name; a.provider = v.provider.trim(); a.date = v.date||a.date;
     a.time = v.time.trim(); a.location = v.location.trim(); a.notes = v.notes.trim();
-    renderGlowUp(); renderPlanner();
+    renderGlowUp(); renderPlanner(); renderHome();
   });
 }
 function removeBeautyAppointment(id){
   state.beautyAppointments = state.beautyAppointments.filter(x=>x.id!==id);
-  renderGlowUp(); renderPlanner();
+  renderGlowUp(); renderPlanner(); renderHome();
 }
 function saveWeeklyReview(){
   const { wins, lessons, nextWeek } = state.weeklyReview;
@@ -4977,6 +5014,8 @@ const homeWidgetLabels = [
   {key:'overdue', label:'Overdue — Needs Attention'},
   {key:'priorities', label:"Today's Top 3 Priorities"},
   {key:'agenda', label:'Daily Agenda'},
+  {key:'scheduledToday', label:'Scheduled For Today (from Planner)'},
+  {key:'scheduledWeek', label:'Scheduled This Week (from Planner)'},
   {key:'deadlines', label:'Upcoming Deadlines & Appointments'},
   {key:'goalSnapshot', label:'Goal Progress Snapshot'},
   {key:'chores', label:'Chores This Week'},
