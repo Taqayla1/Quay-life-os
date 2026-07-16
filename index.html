@@ -2958,6 +2958,7 @@ function glowPanelHTML(tab){
               ${state.recipes.length ? `
               <div style="display:flex;gap:6px;margin-top:8px;">
                 <select id="mealRecipeSelect_${i}" style="flex:1;">
+                  <option value="" selected>Select a recipe…</option>
                   ${state.recipes.map(r=>`<option value="${r.id}">${esc(r.title)}</option>`).join('')}
                 </select>
                 <button class="btn btn-outline btn-sm" onclick="addRecipeToMealDay(${i})">+ Add Recipe</button>
@@ -3624,6 +3625,7 @@ function addRecipeToMealDay(i){
   const select = document.getElementById('mealRecipeSelect_'+i);
   if(!select) return;
   const rid = select.value;
+  if(!rid) return;
   if(!m.recipeIds) m.recipeIds = [];
   if(!m.recipeIds.includes(rid)) m.recipeIds.push(rid);
   renderGlowUp();
